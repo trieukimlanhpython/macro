@@ -1042,7 +1042,7 @@ if data:
                             "hovermode": "x unified",
                             "height": 450,
                             "legend": dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
-                            "xaxis": dict(title="Thời gian (Kỳ/Ngày)", tickangle=45)
+                            "xaxis": dict(title="Thời gian", tickangle=45)
                         }
                         
                         if use_dual_axis2:
