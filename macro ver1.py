@@ -24,7 +24,7 @@ GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1jOUPOExIVzdfVWTYqHdD
 
 # 1. CẤU HÌNH TRANG STREAMLIT
 st.set_page_config(
-    page_title="Macroeconomic Data Viewer", 
+    page_title="📈 Macroeconomic Data Viewer", 
     page_icon="📈", 
     layout="wide"
 )
