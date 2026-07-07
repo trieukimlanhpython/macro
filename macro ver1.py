@@ -329,7 +329,7 @@ if data:
             with c_hd2:
                 end_hd = pd.to_datetime(st.date_input("Đến ngày (Lãi suất Huy động)", pd.to_datetime("2026-06-30"), key="end_t2_hd"))
             
-            ls_hd_df = data['ls'][(data['ls']['Date'] >= start_hd) & (data['ls']['Date'] <= end_hd)].copy()
+            ls_hd_df = data['ls2'][(data['ls2']['Date'] >= start_hd) & (data['ls2']['Date'] <= end_hd)].copy()
             available_cols_ls_hd = get_numeric_cols(ls_hd_df)
             
             default_bar1 = [c for c in [col_hd_thap_def, col_hd_cao_def] if c in available_cols_ls_hd]
