@@ -54,7 +54,7 @@ def load_and_process_data(file_or_url):
         
         # Ánh xạ tên các sheet tương ứng với cấu hình của bạn
         sheets_mapping = {
-            'vnibor_q': 'vnibor_q', 'vnibor': 'vnibor', 'bond_y_q': 'bond_y_q',
+            'vnibor_q': 'vnibor_q', 'vnibor': 'vnibor', 'bond_y_q': 'bond_y_q','bond_y_m': 'bond_y_m',
             'ex_d': 'ex_d', 'ls2': 'ls2', 'credit': 'credit', 'm2': 'm2',
             'ls_wui': 'ls_wui', 'omo': 'omo', 'macro': 'macro', 'inf': 'inf'
         }
@@ -70,7 +70,21 @@ def load_and_process_data(file_or_url):
                     df_sheet['Date'] = pd.to_datetime(df_sheet[date_col])
                     df_sheet = df_sheet.sort_values('Date')
                     processed_data[key] = df_sheet
-                    
+
+        # =====================================================================
+        # LOGIC XỬ LÝ ĐẶC BIỆT CHO BOND_Y_M: Lấy ngày cuối cùng của mỗi tháng
+        # =====================================================================
+        if 'bond_y_m' in processed_data:
+            df_bond_raw = processed_data['bond_y_m']
+            # Tạo cột phụ lưu thông tin Năm-Tháng để gom nhóm
+            df_bond_raw['Year_Month'] = df_bond_raw['Date'].dt.to_period('M')
+            # Lấy dòng có ngày lớn nhất (ngày cuối cùng có dữ liệu) trong mỗi tháng
+            df_bond_monthly = df_bond_raw.loc[df_bond_raw.groupby('Year_Month')['Date'].idxmax()]
+            # Loại bỏ cột phụ để sạch dữ liệu
+            df_bond_monthly = df_bond_monthly.drop(columns=['Year_Month']).sort_values('Date')
+            # Ghi đè lại dữ liệu đã xử lý theo tháng vào dictionary
+            processed_data['bond_y_m'] = df_bond_monthly
+        
         return processed_data
     except Exception as e:
         st.error(f"Lỗi khi đọc dữ liệu: {e}")
@@ -133,64 +147,55 @@ if data:
     # ----------------------------------------------------------------------
     if menu_selection == "🏦 Lãi suất thị trường 2":
         if 'vnibor_q' in data and 'bond_y_q' in data and 'vnibor' in data:
+            
+            # Tên chỉ tiêu mặc định cũ nếu tồn tại trong file
+            col_qd_def = "Lãi suất bình quân liên ngân hàng qua đêm\nĐơn vị: %"
+            col_1w_def = "Lãi suất bình quân liên ngân hàng 1 tuần\nĐơn vị: %"
+            col_bond_def = "Lợi suất trái phiếu chính phủ 1 năm\nĐơn vị: %"
+
             # =====================================================================
-            # TÙY CHỌN TẦN SUẤT DỮ LIỆU VNIBOR
+            # ĐỒ THỊ 1: Tạo bộ lọc thời gian & Tần suất riêng cho Đồ thị 1
             # =====================================================================
-            st.markdown("##### ⏱️ Cấu hình tần suất dữ liệu VNIBOR")
-            freq_selection = st.radio(
-                "Chọn tần suất hiển thị cho Lãi suất liên ngân hàng (VNIBOR):",
+            st.subheader("1. Diễn biến Lãi suất liên ngân hàng")
+            
+            # Bổ sung chọn tần suất riêng cho Đồ thị 1
+            freq_t1 = st.radio(
+                "Chọn tần suất hiển thị (Đồ thị 1):",
                 ["Theo quý (Dữ liệu Quý)", "Theo tháng (Dữ liệu Tháng)"],
                 horizontal=True,
-                key="vnibor_freq_selector"
+                key="freq_selector_t1"
             )
             
-            # Gán dataframe linh hoạt dựa trên lựa chọn tần suất của người dùng
-            if freq_selection == "Theo tháng (Dữ liệu Tháng)":
-                vnibor_active_source = data['vnibor']
-            else:
-                vnibor_active_source = data['vnibor_q']
+            # Gán nguồn dữ liệu dựa trên tần suất Đồ thị 1
+            vnibor_source_t1 = data['vnibor'] if freq_t1 == "Theo tháng (Dữ liệu Tháng)" else data['vnibor_q']
 
-            st.write("---")
-
-            # =====================================================================
-            # ĐỒ THỊ 1: Tạo bộ lọc thời gian riêng cho Tab 1 / Đồ thị 1
-            # =====================================================================
-            st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ 1)")
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t1 = pd.to_datetime(st.date_input("Từ ngày (Phân hệ 1)", pd.to_datetime("2022-01-01"), key="start_t1"))
+                start_date_t1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2022-01-01"), key="start_t1"))
             with c2:
-                end_date_t1 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 1)", pd.to_datetime("2026-06-30"), key="end_t1"))
+                end_date_t1 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 1)", pd.to_datetime("2026-06-30"), key="end_t1"))
 
-            # Lọc khung thời gian từ nguồn dữ liệu được chọn
-            v_q = vnibor_active_source[(vnibor_active_source['Date'] >= start_date_t1) & (vnibor_active_source['Date'] <= end_date_t1)]
-            
-            # Đồ thị 1: Lấy TOÀN BỘ các cột số có sẵn trong bảng VNIBOR hiện tại
-            st.subheader(f"1. Diễn biến Lãi suất liên ngân hàng ({freq_selection.split(' ')[0].lower()})")
+            # Lọc dữ liệu Đồ thị 1
+            v_q = vnibor_source_t1[(vnibor_source_t1['Date'] >= start_date_t1) & (vnibor_source_t1['Date'] <= end_date_t1)]
             available_cols_v1 = get_numeric_cols(v_q)
             
-            # Thuật toán tìm kiếm thông minh cột mặc định dựa trên từ khóa (bất kể xuống dòng hay khoảng trắng)
+            # Gợi ý mặc định
             default_v1 = [c for c in available_cols_v1 if any(k in c for k in ['qua đêm', '1 tuần'])]
             if not default_v1 and available_cols_v1: 
                 default_v1 = available_cols_v1[:min(2, len(available_cols_v1))]
             
-            # Hiển thị bộ chọn chứa đầy đủ toàn bộ các cột có sẵn
-            selected_v1 = st.multiselect(
-                "Chọn các chỉ tiêu VNIBOR muốn hiển thị:", 
-                available_cols_v1, 
-                default=default_v1, 
-                key="sel_t1_g1"
-            )
+            selected_v1 = st.multiselect("Chọn các chỉ tiêu VNIBOR muốn hiển thị:", available_cols_v1, default=default_v1, key="sel_t1_g1")
             
             if selected_v1:
                 fig1 = go.Figure()
                 for col in selected_v1:
                     y_val = v_q[col]*100 if v_q[col].max() <= 1 else v_q[col]
-                    display_name = col.split('\n')[0]  # Thu gọn nhãn nếu có xuống dòng
+                    display_name = col.split('\n')[0]
                     fig1.add_trace(go.Scatter(x=v_q['Date'], y=y_val, mode='lines+markers', name=display_name))
                 
                 fig1.update_layout(
-                    title=f"Lãi suất liên ngân hàng ({freq_selection.split(' ')[0].lower()})", 
+                    title=f"Lãi suất liên ngân hàng ({freq_t1.split(' ')[0].lower()})", 
                     xaxis_title="Ngày", 
                     yaxis_title="Tỷ lệ (%)", 
                     template="plotly_white", 
@@ -204,37 +209,48 @@ if data:
             st.write("---") # Đường kẻ phân cách giữa 2 đồ thị
 
             # =====================================================================
-            # ĐỒ THỊ 2: Bộ lọc thời gian riêng (Phân hệ 2)
+            # ĐỒ THỊ 2: Tạo bộ lọc thời gian & Tần suất riêng cho Đồ thị 2
             # =====================================================================
-            st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ 2)")
+            st.subheader("2. Tương quan VNIBOR và Lợi suất TPCP")
+            
+            # Bổ sung chọn tần suất riêng cho Đồ thị 2
+            freq_t2 = st.radio(
+                "Chọn tần suất hiển thị (Đồ thị 2):",
+                ["Theo quý (Dữ liệu Quý)", "Theo tháng (Dữ liệu Tháng)"],
+                horizontal=True,
+                key="freq_selector_t2"
+            )
+            
+            # Gán nguồn dữ liệu động dựa trên tần suất Đồ thị 2
+            vnibor_source_t2 = data['vnibor'] if freq_t2 == "Theo tháng (Dữ liệu Tháng)" else data['vnibor_q']
+            
+            if freq_t2 == "Theo tháng (Dữ liệu Tháng)" and 'bond_y_m' in data:
+                bond_source_t2 = data['bond_y_m']
+            else:
+                bond_source_t2 = data['bond_y_q']
+
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
             c3, c4 = st.columns(2)
             with c3:
-                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Phân hệ 2)", pd.to_datetime("2022-01-01"), key="start_t2"))
+                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2022-01-01"), key="start_t2"))
             with c4:
-                end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 2)", pd.to_datetime("2026-06-30"), key="end_t2"))
+                end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 2)", pd.to_datetime("2026-06-30"), key="end_t2"))
 
-            # Lọc khung thời gian riêng cho Đồ thị 2
-            v_q_g2 = vnibor_active_source[(vnibor_active_source['Date'] >= start_date_t2) & (vnibor_active_source['Date'] <= end_date_t2)]
-            b_q_g2 = data['bond_y_q'][(data['bond_y_q']['Date'] >= start_date_t2) & (data['bond_y_q']['Date'] <= end_date_t2)]
+            # Lọc khung thời gian riêng cho Đồ thị 2 từ các nguồn dữ liệu độc lập vừa gán
+            v_q_g2 = vnibor_source_t2[(vnibor_source_t2['Date'] >= start_date_t2) & (vnibor_source_t2['Date'] <= end_date_t2)]
+            b_q_g2 = bond_source_t2[(bond_source_t2['Date'] >= start_date_t2) & (bond_source_t2['Date'] <= end_date_t2)]
 
-            st.subheader(f"2. Tương quan VNIBOR ({freq_selection.split(' ')[0].lower()}) và Lợi suất TPCP")
-            
-            # Quét sạch toàn bộ các cột số thực tế có sẵn từ 2 dataframe
             available_cols_v2 = get_numeric_cols(v_q_g2)
             available_cols_b2 = get_numeric_cols(b_q_g2)
             
             cc1, cc2 = st.columns(2)
             with cc1:
-                # Tìm cột qua đêm tự động, nếu không thấy lấy cột đầu tiên trong danh sách có sẵn
                 default_v2_col = next((c for c in available_cols_v2 if 'qua đêm' in c), available_cols_v2[0] if available_cols_v2 else None)
                 idx_v2 = available_cols_v2.index(default_v2_col) if default_v2_col in available_cols_v2 else 0
-                
                 selected_v2 = st.selectbox("Chọn chỉ tiêu liên ngân hàng (Trục VNIBOR):", available_cols_v2, index=idx_v2, key="sel_t1_g2_v")
             with cc2:
-                # Tìm cột 1 năm tự động, nếu không thấy lấy cột đầu tiên trong danh sách có sẵn
-                default_b2_col = next((c for c in available_cols_b2 if '1 năm' in c), available_cols_b2[0] if available_cols_b2 else None)
+                default_b2_col = next((c for c in available_cols_b2 if any(k in c for k in ['10 năm', '1 năm'])), available_cols_b2[0] if available_cols_b2 else None)
                 idx_b2 = available_cols_b2.index(default_b2_col) if default_b2_col in available_cols_b2 else 0
-                
                 selected_b2 = st.selectbox("Chọn chỉ tiêu Trái phiếu Chính phủ:", available_cols_b2, index=idx_b2, key="sel_t1_g2_b")
             
             if selected_v2 and selected_b2:
@@ -249,7 +265,7 @@ if data:
                 fig2.add_trace(go.Scatter(x=b_q_g2['Date'], y=y_b2, mode='lines+markers', name=display_b2, line=dict(dash='dash')))
                 
                 fig2.update_layout(
-                    title=f"Mối tương quan giữa VNIBOR ({freq_selection.split(' ')[0].lower()}) và Lợi suất TPCP", 
+                    title=f"Mối tương quan giữa VNIBOR và Lợi suất TPCP ({freq_t2.split(' ')[0].lower()})", 
                     xaxis_title="Ngày", 
                     yaxis_title="Tỷ lệ (%)", 
                     template="plotly_white", 
