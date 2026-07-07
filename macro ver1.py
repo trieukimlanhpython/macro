@@ -309,7 +309,7 @@ if data:
             # =====================================================================
             # ĐỒ THỊ 1: CHI TIẾT LÃI SUẤT HUY ĐỘNG & CHO VAY (DỮ LIỆU LS1)
             # =====================================================================
-            st.subheader("1. Diễn biến Lãi suất Huy động và Cho vay chi tiết (Tháng)")
+            st.subheader("1. Lãi suất Huy động và Cho vay chi tiết")
             
             # THIẾT LẬP THỜI GIAN ĐỘNG CHO LS1
             min_date_ls1 = data['ls1']['Date'].min().to_pydatetime() if not data['ls1'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
@@ -376,7 +376,7 @@ if data:
             # ĐỒ THỊ 2: LÃI SUẤT HUY ĐỘNG & CHO VAY TỔNG HỢP (DỮ LIỆU LS2)
             # =====================================================================
             st.write("---")
-            st.subheader("2. Diễn biến Lãi suất Huy động và Cho vay tổng hợp (Cột nhóm)")
+            st.subheader("2. Lãi suất Huy động và Cho vay trung bình")
             
             # THIẾT LẬP THỜI GIAN ĐỘNG CHO LS2
             min_date_ls2 = data['ls2']['Date'].min().to_pydatetime() if not data['ls2'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
@@ -482,7 +482,7 @@ if data:
             # =========================================================================
             # --- ĐỒ THỊ 1: CẤU TRÚC QUY MÔ GIÁ TRỊ SẢN LƯỢNG TIỀN TỆ ---
             # =========================================================================
-            st.markdown("##### 📅 Khung thời gian phân tích Quy mô & Tăng trưởng Tín dụng (Đồ thị 1)")
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
             c1, c2 = st.columns(2)
             with c1:
                 start_date_t3_cre = pd.to_datetime(st.date_input(
@@ -500,7 +500,7 @@ if data:
             cre_df = data['credit'][(data['credit']['Date'] >= start_date_t3_cre) & (data['credit']['Date'] <= end_date_t3_cre)]
             available_cols_cre = get_numeric_cols(cre_df)
             
-            st.subheader("1. Tổng phương tiện thanh toán và Cơ cấu Tiền gửi (Triệu tỷ VND)")
+            st.subheader("1. M2 và/hoặc Dư nợ tín dụng: số tổng và số cơ cấu")
             
             cc1, cc2, cc3 = st.columns(3)
             with cc1:
@@ -534,10 +534,10 @@ if data:
             # --- ĐỒ THỊ 2: TỐC ĐỘ TĂNG TRƯỞNG M2 & TÍN DỤNG ---
             # =========================================================================
             st.markdown("---")
-            st.subheader("2. Cung tiền M2 và Dư nợ Tín dụng (từ đầu năm)")
+            st.subheader("2. Cung tiền M2 và/hoặc Dư nợ Tín dụng")
             
             # Bộ lọc thời gian riêng biệt cho Đồ thị 2 sử dụng thời gian động từ credit
-            st.markdown("##### 📅 Khung thời gian phân tích Tốc độ tăng trưởng (Đồ thị 2)")
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
             ct1, ct2 = st.columns(2)
             with ct1:
                 start_date_t3_g2 = pd.to_datetime(st.date_input(
@@ -751,7 +751,7 @@ if data:
             max_date_ex = data['ex_d']['Date'].max()
             
             # Tạo bộ lọc thời gian riêng biệt cho Đồ thị Tỷ Giá
-            st.markdown("##### 📅 Khung thời gian phân tích Tỷ giá trung tâm")
+            st.markdown("##### 📅 Khung thời gian phân tích")
             c1, c2 = st.columns(2)
             with c1:
                 start_date_t5_ex = pd.to_datetime(st.date_input("Từ ngày (Tỷ giá)", min_date_ex, key="start_t5_ex"))
@@ -806,7 +806,7 @@ if data:
             max_date_inf = inf['Ngày'].max()
             
             # Tạo bộ lọc thời gian riêng biệt cho Đồ thị Lạm phát
-            st.markdown("##### 📅 Khung thời gian phân tích Lạm phát")
+            st.markdown("##### 📅 Khung thời gian phân tích")
             c3, c4 = st.columns(2)
             with c3:
                 start_date_inf = st.date_input("Từ ngày (Lạm phát)", min_date_inf, key="start_t5_inf")
