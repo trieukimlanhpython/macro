@@ -119,7 +119,7 @@ if data:
     * **🏦 Lãi suất thị trường 2:** Lãi suất liên ngân hàng, lãi suất trái phiếu chính phủ (so sánh).
     * **📈 Lãi suất thị trường 1:** Lãi suất huy động, lãi suất cho vay, ngắn hạn, trung dài hạn, cao nhất, thấp nhất, VND, USD.
     * **📊 Tín dụng, Cung tiền & OMO:** Diễn biến dư nợ tín dụng, cơ cấu dư nợ, tổng phương tiện thanh toán, cơ cấu tổng phương tiện thanh toán, bơm hút ròng tiền trên thị trường mở.
-    * **🌍 Chỉ số Bất ổn & FFR:** Chỉ số Bất ổn Toàn cầu (WUI), Chỉ số Bất ổn Chính sách Tiền tệ Mỹ (MPUI) và Lãi suất Quỹ liên bang Fed (FFR).
+    * **🌍 Chỉ số Bất ổn, GPR & FFR:** Chỉ số Bất ổn Toàn cầu (WUI), Chỉ số Bất ổn Chính sách Tiền tệ Mỹ (MPUI), Chỉ số rủi ro địa chính trị (GPR) và Lãi suất Quỹ liên bang Fed (FFR).
     * **⚖️ Tỷ giá & Lạm phát:** Tỷ giá trung tâm VND/USD (ngày), Kỳ vọng lạm phát điều tra của các TCTD (BQ năm nay so với năm trước) và Thay đổi CPI (so với cùng kỳ) (%).
     * **📊 Kinh tế vĩ mô (Macro):** Xem các chỉ tiêu vĩ mô đồng thời.
     """
@@ -697,7 +697,9 @@ if data:
             col_wui_def = "WUI, GDP weighted average"
             col_bbd_def = "BBD MPU Index Based on Access World News"
             col_ffr_def = "Monetary policy-related, Rate, Percent per annum"
-            
+            # BỔ SUNG 2 CỘT MỚI (Đối chiếu chính xác theo ảnh cấu trúc file của bạn)
+            col_gpr_def = "GPR: Recent GPR\n(Index: 1985:2019=100)"
+            col_gpr_vnm_def = "GPRHC_VNM: Country GPR Historical:\nPercent of articles\n(Vietnam)"
             # Đồ thị 1: Trục tung kép (Twin X-axis) WUI vs BBD MPU
             st.subheader("1. Chỉ số Bất ổn Toàn cầu (WUI) và Bất ổn Chính sách Tiền tệ Mỹ (MPUI)")
             
@@ -744,7 +746,38 @@ if data:
                 legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
             )
             st.plotly_chart(fig_twin2, use_container_width=True)
-
+            # =========================================================================
+            # ĐỒ THỊ 3 (BỔ SUNG MỚI): Trục tung kép cho Chỉ số Rủi ro Chính trị (GPR)
+            # =========================================================================
+            st.write("---")
+            st.subheader("3. Rủi ro Địa chính trị Toàn cầu (GPR) và Rủi ro Địa chính trị Việt Nam (GPRHC_VNM)")
+            
+            cz1, cz2 = st.columns(2)
+            with cz1:
+                # Ưu tiên lấy cột rủi ro toàn cầu làm mặc định cho trục trái
+                def_z1 = col_gpr_def if col_gpr_def in available_cols_wui else available_cols_wui[0]
+                sel_z1 = st.selectbox("Chọn chỉ tiêu Rủi ro Địa chính trị (Trục trái):", available_cols_wui, index=available_cols_wui.index(def_z1), key="t4_g3_l")
+            with cz2:
+                # Ưu tiên lấy cột rủi ro quốc gia Việt Nam làm mặc định cho trục phải
+                def_z2 = col_gpr_vnm_def if col_gpr_vnm_def in available_cols_wui else available_cols_wui[min(1, len(available_cols_wui)-1)]
+                sel_z2 = st.selectbox("Chọn chỉ tiêu Quốc gia cụ thể (Trục phải):", available_cols_wui, index=available_cols_wui.index(def_z2), key="t4_g3_r")
+            
+            fig_twin3 = go.Figure()
+            
+            # Khử định dạng xuống dòng '\n' khi hiển thị nhãn Legend và tiêu đề Trục tọa độ
+            clean_label_z1 = sel_z1.split(':')[0].strip()
+            clean_label_z2 = sel_z2.split(':')[0].strip()
+            
+            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z1], name=f"{clean_label_z1} (Trục trái)", mode='lines+markers', line=dict(color='#2ca02c')))
+            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z2], name=f"{clean_label_z2} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='#ff7f0e')))
+            
+            fig_twin3.update_layout(
+                template="plotly_white",
+                yaxis=dict(title=clean_label_z1, titlefont=dict(color='#2ca02c'), tickfont=dict(color='#2ca02c')),
+                yaxis2=dict(title=clean_label_z2, titlefont=dict(color='#ff7f0e'), tickfont=dict(color='#ff7f0e'), overlaying='y', side='right'),
+                legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
+            )
+            st.plotly_chart(fig_twin3, use_container_width=True)
     # ----------------------------------------------------------------------
     # MODE 5: TỶ GIÁ TRUNG TÂM & KỲ VỌNG LẠM PHÁT (TƯƠNG ỨNG TAB 5 CŨ)
     # ----------------------------------------------------------------------
