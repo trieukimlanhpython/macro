@@ -513,16 +513,16 @@ if data:
             
             st.subheader("1. M2 và/hoặc Dư nợ tín dụng: số tổng và số cơ cấu")
             
-            cc1, cc2, cc3 = st.columns(3)
+            cc1, cc2 = st.columns(2)
             with cc1:
                 def_b1 = col_tckt_val_def if col_tckt_val_def in available_cols_cre else available_cols_cre[0]
                 sel_b1 = st.selectbox("Cấu phần Cột Chồng 1 (Tiền gửi TCKT):", available_cols_cre, index=available_cols_cre.index(def_b1), key="t3_g1_b1")
             with cc2:
                 def_b2 = col_dancu_val_def if col_dancu_val_def in available_cols_cre else available_cols_cre[min(1, len(available_cols_cre)-1)]
                 sel_b2 = st.selectbox("Cấu phần Cột Chồng 2 (Tiền gửi Dân cư):", available_cols_cre, index=available_cols_cre.index(def_b2), key="t3_g1_b2")
-            with cc3:
-                def_l1 = col_m2_val_def if col_m2_val_def in available_cols_cre else available_cols_cre[min(2, len(available_cols_cre)-1)]
-                sel_l1 = st.selectbox("Đường Tổng thể xu hướng (M2):", available_cols_cre, index=available_cols_cre.index(def_l1), key="t3_g1_l1")
+            
+            def_l1 = col_m2_val_def if col_m2_val_def in available_cols_cre else available_cols_cre[min(2, len(available_cols_cre)-1)]
+            sel_l1 = st.selectbox("Đường Tổng thể xu hướng (M2):", available_cols_cre, index=available_cols_cre.index(def_l1), key="t3_g1_l1")
             
             # Tiến hành quy đổi đơn vị tính tự động /1.000.000 nếu dữ liệu là tỷ đồng
             v_tckt = cre_df[sel_b1] / 1000000 if cre_df[sel_b1].max() > 1000 else cre_df[sel_b1]
