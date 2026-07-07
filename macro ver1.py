@@ -754,12 +754,18 @@ if data:
             
             cz1, cz2 = st.columns(2)
             with cz1:
-                # Ưu tiên lấy cột rủi ro toàn cầu làm mặc định cho trục trái
-                def_z1 = col_gpr_def if col_gpr_def in available_cols_wui else available_cols_wui[0]
+                # TỰ ĐỘNG DÒ: Tìm cột trong file có chứa từ khóa 'GPR:'
+                matched_gpr_l = [c for c in available_cols_wui if 'gpr:' in c.lower()]
+                # Nếu tìm thấy thì lấy cột đó, nếu không thì lấy cột đầu tiên của file làm dự phòng
+                def_z1 = matched_gpr_l[0] if matched_gpr_l else available_cols_wui[0]
+                
                 sel_z1 = st.selectbox("Chọn chỉ tiêu Rủi ro Địa chính trị (Trục trái):", available_cols_wui, index=available_cols_wui.index(def_z1), key="t4_g3_l")
             with cz2:
-                # Ưu tiên lấy cột rủi ro quốc gia Việt Nam làm mặc định cho trục phải
-                def_z2 = col_gpr_vnm_def if col_gpr_vnm_def in available_cols_wui else available_cols_wui[min(1, len(available_cols_wui)-1)]
+                # TỰ ĐỘNG DÒ: Tìm cột trong file có chứa từ khóa 'gprhc_vnm:'
+                matched_gpr_r = [c for c in available_cols_wui if 'gprhc_vnm:' in c.lower()]
+                # Nếu tìm thấy thì lấy cột đó, nếu không thì lấy cột thứ 2 của file làm dự phòng
+                def_z2 = matched_gpr_r[0] if matched_gpr_r else available_cols_wui[min(1, len(available_cols_wui)-1)]
+                
                 sel_z2 = st.selectbox("Chọn chỉ tiêu Quốc gia cụ thể (Trục phải):", available_cols_wui, index=available_cols_wui.index(def_z2), key="t4_g3_r")
             
             # --- BƯỚC 1: XỬ LÝ CHUỖI NHÃN SẠCH CHỮ TRƯỚC KHI TRUYỀN VÀO ĐỒ THỊ ---
@@ -773,10 +779,10 @@ if data:
             fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z1], name=f"{clean_label_z1} (Trục trái)", mode='lines+markers', line=dict(color='#2ca02c')))
             fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z2], name=f"{clean_label_z2} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='#ff7f0e')))
             
-            # --- BƯỚC 4: CẬP NHẬT GIAO DIỆN (ĐOẠN LỖI CŨ GIỜ ĐÃ AN TOÀN) ---
+            # --- BƯỚC 4: CẬP NHẬT GIAO DIỆN CHUẨN PLOTLY ---
             fig_twin3.update_layout(
                 template="plotly_white",
-                # Sửa cấu trúc yaxis 1 (Trục trái)
+                # Cấu trúc yaxis 1 (Trục trái)
                 yaxis=dict(
                     title=dict(
                         text=clean_label_z1,
@@ -784,7 +790,7 @@ if data:
                     ),
                     tickfont=dict(color='#2ca02c')
                 ),
-                # Sửa cấu trúc yaxis 2 (Trục phải)
+                # Cấu trúc yaxis 2 (Trục phải)
                 yaxis2=dict(
                     title=dict(
                         text=clean_label_z2,
@@ -797,7 +803,7 @@ if data:
                 legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
             )
             
-            # --- BƯỚC 5: COI NHƯ HOÀN TẤT VÀ ĐẨY LÊN GIAO DIỆN STREAMLIT ---
+            # --- BƯỚC 5: HIỂN THỊ LÊN GIAO DIỆN STREAMLIT ---
             st.plotly_chart(fig_twin3, use_container_width=True)
     # ----------------------------------------------------------------------
     # MODE 5: TỶ GIÁ TRUNG TÂM & KỲ VỌNG LẠM PHÁT (TƯƠNG ỨNG TAB 5 CŨ)
