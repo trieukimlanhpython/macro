@@ -169,12 +169,24 @@ if data:
             # Gán nguồn dữ liệu dựa trên tần suất Đồ thị 1
             vnibor_source_t1 = data['vnibor'] if freq_t1 == "Theo tháng (Dữ liệu Tháng)" else data['vnibor_q']
 
+            # THIẾT LẬP THỜI GIAN ĐỘNG CHO ĐỒ THỊ 1 DỰA TRÊN VNIBOR SOURCE
+            min_date_t1 = vnibor_source_t1['Date'].min().to_pydatetime() if not vnibor_source_t1.empty else pd.to_datetime("2022-01-01").to_pydatetime()
+            max_date_t1 = vnibor_source_t1['Date'].max().to_pydatetime() if not vnibor_source_t1.empty else pd.to_datetime("2026-06-30").to_pydatetime()
+
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2026-01-01"), key="start_t1"))
+                start_date_t1 = pd.to_datetime(st.date_input(
+                    "Từ ngày (Đồ thị 1)", 
+                    min_value=min_date_t1, max_value=max_date_t1, value=min_date_t1, 
+                    key="start_t1"
+                ))
             with c2:
-                end_date_t1 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 1)", pd.to_datetime("2026-06-30"), key="end_t1"))
+                end_date_t1 = pd.to_datetime(st.date_input(
+                    "Đến ngày (Đồ thị 1)", 
+                    min_value=min_date_t1, max_value=max_date_t1, value=max_date_t1, 
+                    key="end_t1"
+                ))
 
             # Lọc dữ liệu Đồ thị 1
             v_q = vnibor_source_t1[(vnibor_source_t1['Date'] >= start_date_t1) & (vnibor_source_t1['Date'] <= end_date_t1)]
@@ -229,13 +241,25 @@ if data:
             else:
                 bond_source_t2 = data['bond_y_q']
 
+            # THIẾT LẬP THỜI GIAN ĐỘNG CHO ĐỒ THỊ 2 (Ưu tiên theo nguồn VNIBOR của đồ thị 2)
+            min_date_t2 = vnibor_source_t2['Date'].min().to_pydatetime() if not vnibor_source_t2.empty else pd.to_datetime("2022-01-01").to_pydatetime()
+            max_date_t2 = vnibor_source_t2['Date'].max().to_pydatetime() if not vnibor_source_t2.empty else pd.to_datetime("2026-06-30").to_pydatetime()
+
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
             c3, c4 = st.columns(2)
             with c3:
-                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2026-01-01"), key="start_t2"))
+                start_date_t2 = pd.to_datetime(st.date_input(
+                    "Từ ngày (Đồ thị 2)", 
+                    min_value=min_date_t2, max_value=max_date_t2, value=min_date_t2, 
+                    key="start_t2"
+                ))
             with c4:
-                end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 2)", pd.to_datetime("2026-06-30"), key="end_t2"))
-
+                end_date_t2 = pd.to_datetime(st.date_input(
+                    "Đến ngày (Đồ thị 2)", 
+                    min_value=min_date_t2, max_value=max_date_t2, value=max_date_t2, 
+                    key="end_t2"
+                ))
+    
             # Lọc khung thời gian riêng cho Đồ thị 2 từ các nguồn dữ liệu độc lập vừa gán
             v_q_g2 = vnibor_source_t2[(vnibor_source_t2['Date'] >= start_date_t2) & (vnibor_source_t2['Date'] <= end_date_t2)]
             b_q_g2 = bond_source_t2[(bond_source_t2['Date'] >= start_date_t2) & (bond_source_t2['Date'] <= end_date_t2)]
@@ -275,7 +299,7 @@ if data:
                     xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig2, use_container_width=True)
-   
+
     # ----------------------------------------------------------------------
     # MODE 2: LÃI SUẤT THỊ TRƯỜNG 1 (TƯƠNG ỨNG TAB 2 CŨ)
     # ----------------------------------------------------------------------
@@ -287,13 +311,25 @@ if data:
             # =====================================================================
             st.subheader("1. Diễn biến Lãi suất Huy động và Cho vay chi tiết (Tháng)")
             
+            # THIẾT LẬP THỜI GIAN ĐỘNG CHO LS1
+            min_date_ls1 = data['ls1']['Date'].min().to_pydatetime() if not data['ls1'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
+            max_date_ls1 = data['ls1']['Date'].max().to_pydatetime() if not data['ls1'].empty else pd.to_datetime("2026-06-30").to_pydatetime()
+
             # Bộ lọc thời gian độc lập cho Đồ thị 1
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
             c1_t1, c2_t1 = st.columns(2)
             with c1_t1:
-                start_date_ls1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2026-01-01"), key="start_ls1"))
+                start_date_ls1 = pd.to_datetime(st.date_input(
+                    "Từ ngày (Đồ thị 1)", 
+                    min_value=min_date_ls1, max_value=max_date_ls1, value=min_date_ls1, 
+                    key="start_ls1"
+                ))
             with c2_t1:
-                end_date_ls1 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 1)", pd.to_datetime("2026-06-30"), key="end_ls1"))
+                end_date_ls1 = pd.to_datetime(st.date_input(
+                    "Đến ngày (Đồ thị 1)", 
+                    min_value=min_date_ls1, max_value=max_date_ls1, value=max_date_ls1, 
+                    key="end_ls1"
+                ))
 
             # Lọc dữ liệu ls1 theo khung thời gian riêng
             ls1_df = data['ls1'][(data['ls1']['Date'] >= start_date_ls1) & (data['ls1']['Date'] <= end_date_ls1)]
@@ -342,13 +378,25 @@ if data:
             st.write("---")
             st.subheader("2. Diễn biến Lãi suất Huy động và Cho vay tổng hợp (Cột nhóm)")
             
+            # THIẾT LẬP THỜI GIAN ĐỘNG CHO LS2
+            min_date_ls2 = data['ls2']['Date'].min().to_pydatetime() if not data['ls2'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
+            max_date_ls2 = data['ls2']['Date'].max().to_pydatetime() if not data['ls2'].empty else pd.to_datetime("2026-06-30").to_pydatetime()
+
             # Bộ lọc thời gian độc lập cho Đồ thị 2
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
             c1_t2, c2_t2 = st.columns(2)
             with c1_t2:
-                start_date_ls2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2026-01-01"), key="start_ls2"))
+                start_date_ls2 = pd.to_datetime(st.date_input(
+                    "Từ ngày (Đồ thị 2)", 
+                    min_value=min_date_ls2, max_value=max_date_ls2, value=min_date_ls2, 
+                    key="start_ls2"
+                ))
             with c2_t2:
-                end_date_ls2 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 2)", pd.to_datetime("2026-06-30"), key="end_ls2"))
+                end_date_ls2 = pd.to_datetime(st.date_input(
+                    "Đến ngày (Đồ thị 2)", 
+                    min_value=min_date_ls2, max_value=max_date_ls2, value=max_date_ls2, 
+                    key="end_ls2"
+                ))
 
             # Lọc dữ liệu ls2 theo khung thời gian riêng
             ls2_df = data['ls2'][(data['ls2']['Date'] >= start_date_ls2) & (data['ls2']['Date'] <= end_date_ls2)]
@@ -366,7 +414,7 @@ if data:
                 selected_hd2 = st.multiselect("🏦 Chọn Lãi suất Huy động tổng hợp (ls2):", hd_cols_ls2, default=default_hd2, key="sel_hd_ls2")
             with cc4:
                 default_cv2 = [c for c in cv_cols_ls2 if 'trung và dài hạn' in c.lower()]
-                if not default_cv2 and cv_cols_ls2: default_cv2 = cv_cols_ls2[:2]
+                if not default_cv2 cancer cv_cols_ls2: default_cv2 = cv_cols_ls2[:2]
                 selected_cv2 = st.multiselect("💸 Chọn Lãi suất Cho vay tổng hợp (ls2):", cv_cols_ls2, default=default_cv2, key="sel_cv_ls2")
 
             selected_bar2 = selected_hd2 + selected_cv2
@@ -426,15 +474,27 @@ if data:
         col_omo_val_def = "   Bơm hút tiền ròng (tỷ VND)"
     
         if 'credit' in data:
+            # THIẾT LẬP THỜI GIAN ĐỘNG CHO SHEET CREDIT
+            min_date_credit = data['credit']['Date'].min().to_pydatetime() if not data['credit'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
+            max_date_credit = data['credit']['Date'].max().to_pydatetime() if not data['credit'].empty else pd.to_datetime("2026-06-30").to_pydatetime()
+
             # =========================================================================
             # --- ĐỒ THỊ 1: CẤU TRÚC QUY MÔ GIÁ TRỊ SẢN LƯỢNG TIỀN TỆ ---
             # =========================================================================
             st.markdown("##### 📅 Khung thời gian phân tích Quy mô & Tăng trưởng Tín dụng (Đồ thị 1)")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t3_cre = pd.to_datetime(st.date_input("Từ ngày (Tín dụng)", pd.to_datetime("2026-01-01"), key="start_t3_cre"))
+                start_date_t3_cre = pd.to_datetime(st.date_input(
+                    "Từ ngày (Tín dụng)", 
+                    min_value=min_date_credit, max_value=max_date_credit, value=min_date_credit, 
+                    key="start_t3_cre"
+                ))
             with c2:
-                end_date_t3_cre = pd.to_datetime(st.date_input("Đến ngày (Tín dụng)", pd.to_datetime("2026-06-30"), key="end_t3_cre"))
+                end_date_t3_cre = pd.to_datetime(st.date_input(
+                    "Đến ngày (Tín dụng)", 
+                    min_value=min_date_credit, max_value=max_date_credit, value=max_date_credit, 
+                    key="end_t3_cre"
+                ))
     
             cre_df = data['credit'][(data['credit']['Date'] >= start_date_t3_cre) & (data['credit']['Date'] <= end_date_t3_cre)]
             available_cols_cre = get_numeric_cols(cre_df)
@@ -470,25 +530,32 @@ if data:
             st.plotly_chart(fig_comb, use_container_width=True)
             
             # =========================================================================
-            # --- ĐỒ THỊ 2: TỐC ĐỘ TĂNG TRƯỞNG M2 & TÍN DỤNG (BỔ SUNG BỘ LỌC NGÀY) ---
+            # --- ĐỒ THỊ 2: TỐC ĐỘ TĂNG TRƯỞNG M2 & TÍN DỤNG ---
             # =========================================================================
             st.markdown("---")
             st.subheader("2. Cung tiền M2 và Dư nợ Tín dụng (từ đầu năm)")
             
-            # 1. Bổ sung bộ lọc thời gian riêng biệt cho Đồ thị 2
+            # Bộ lọc thời gian riêng biệt cho Đồ thị 2 sử dụng thời gian động từ credit
             st.markdown("##### 📅 Khung thời gian phân tích Tốc độ tăng trưởng (Đồ thị 2)")
             ct1, ct2 = st.columns(2)
             with ct1:
-                start_date_t3_g2 = pd.to_datetime(st.date_input("Từ ngày (Tốc độ tăng trưởng)", pd.to_datetime("2026-01-01"), key="start_t3_g2"))
+                start_date_t3_g2 = pd.to_datetime(st.date_input(
+                    "Từ ngày (Tốc độ tăng trưởng)", 
+                    min_value=min_date_credit, max_value=max_date_credit, value=min_date_credit, 
+                    key="start_t3_g2"
+                ))
             with ct2:
-                end_date_t3_g2 = pd.to_datetime(st.date_input("Đến ngày (Tốc độ tăng trưởng)", pd.to_datetime("2026-06-30"), key="end_t3_g2"))
+                end_date_t3_g2 = pd.to_datetime(st.date_input(
+                    "Đến ngày (Tốc độ tăng trưởng)", 
+                    min_value=min_date_credit, max_value=max_date_credit, value=max_date_credit, 
+                    key="end_t3_g2"
+                ))
     
             # Lọc tập dữ liệu riêng biệt cho đồ thị 2
             cre_df_g2 = data['credit'][(data['credit']['Date'] >= start_date_t3_g2) & (data['credit']['Date'] <= end_date_t3_g2)]
             available_cols_cre_g2 = get_numeric_cols(cre_df_g2)
     
             if not cre_df_g2.empty:
-                # Gom bộ lọc vào 2 cột chức năng rõ ràng: 1 bên chọn Chỉ tiêu, 1 bên chọn Loại đồ thị
                 ccc1, ccc2 = st.columns([3, 1]) 
                 with ccc1:
                     def_mult_all = [c for c in [col_m2_pct_def, col_cre_pct_def] if c in available_cols_cre_g2]
@@ -510,7 +577,6 @@ if data:
                 
                 if sel_mult_all:
                     for col in sel_mult_all:
-                        # Chuẩn hóa đơn vị % nếu dữ liệu gốc ở dạng số thập phân (<= 1)
                         y_val = cre_df_g2[col]*100 if cre_df_g2[col].max() <= 1 else cre_df_g2[col]
                         
                         if chart_type == "Dạng Đường (Line)":
@@ -552,12 +618,25 @@ if data:
         st.markdown("---")
         if 'omo' in data:
             st.subheader("3. Bơm/Hút tiền ròng trên thị trường mở (OMO)")
+            
+            # THIẾT LẬP THỜI GIAN ĐỘNG CHO SHEET OMO
+            min_date_omo = data['omo']['Date'].min().to_pydatetime() if not data['omo'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
+            max_date_omo = data['omo']['Date'].max().to_pydatetime() if not data['omo'].empty else pd.to_datetime("2026-06-30").to_pydatetime()
+
             st.markdown("##### 📅 Khung thời gian phân tích Nghiệp vụ OMO")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t3_omo = pd.to_datetime(st.date_input("Từ ngày (OMO)", pd.to_datetime("2026-01-01"), key="start_t3_omo"))
+                start_date_t3_omo = pd.to_datetime(st.date_input(
+                    "Từ ngày (OMO)", 
+                    min_value=min_date_omo, max_value=max_date_omo, value=min_date_omo, 
+                    key="start_t3_omo"
+                ))
             with c2:
-                end_date_t3_omo = pd.to_datetime(st.date_input("Đến ngày (OMO)", pd.to_datetime("2026-06-30"), key="end_t3_omo"))
+                end_date_t3_omo = pd.to_datetime(st.date_input(
+                    "Đến ngày (OMO)", 
+                    min_value=min_date_omo, max_value=max_date_omo, value=max_date_omo, 
+                    key="end_t3_omo"
+                ))
     
             omo_df = data['omo'][(data['omo']['Date'] >= start_date_t3_omo) & (data['omo']['Date'] <= end_date_t3_omo)]
             available_cols_omo = get_numeric_cols(omo_df)
@@ -579,13 +658,26 @@ if data:
     # ----------------------------------------------------------------------
     elif menu_selection == "🌍 Chỉ số Bất ổn & FFR":
         if 'ls_wui' in data:
+            
+            # THIẾT LẬP THỜI GIAN ĐỘNG CHO SHEET LS_WUI
+            min_date_wui = data['ls_wui']['Date'].min().to_pydatetime() if not data['ls_wui'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
+            max_date_wui = data['ls_wui']['Date'].max().to_pydatetime() if not data['ls_wui'].empty else pd.to_datetime("2026-06-30").to_pydatetime()
+
             # Tạo bộ lọc thời gian riêng cho Tab 4
             st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ 4)")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t4 = pd.to_datetime(st.date_input("Từ ngày (Phân hệ 4)", pd.to_datetime("2022-01-01"), key="start_t4"))
+                start_date_t4 = pd.to_datetime(st.date_input(
+                    "Từ ngày (Phân hệ 4)", 
+                    min_value=min_date_wui, max_value=max_date_wui, value=min_date_wui, 
+                    key="start_t4"
+                ))
             with c2:
-                end_date_t4 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 4)", pd.to_datetime("2026-06-30"), key="end_t4"))
+                end_date_t4 = pd.to_datetime(st.date_input(
+                    "Đến ngày (Phân hệ 4)", 
+                    min_value=min_date_wui, max_value=max_date_wui, value=max_date_wui, 
+                    key="end_t4"
+                ))
 
             wui_df = data['ls_wui'][(data['ls_wui']['Date'] >= start_date_t4) & (data['ls_wui']['Date'] <= end_date_t4)]
             available_cols_wui = get_numeric_cols(wui_df)
@@ -650,13 +742,20 @@ if data:
         # =========================================================================
         st.subheader("1. Diễn biến Tỷ giá trung tâm VND/USD")
         if 'ex_d' in data:
+            # Đảm bảo cột 'Date' ở định dạng datetime trước khi lấy min/max
+            data['ex_d']['Date'] = pd.to_datetime(data['ex_d']['Date'])
+            
+            # Tự động tính toán ngày bắt đầu và kết thúc động từ dữ liệu thực tế
+            min_date_ex = data['ex_d']['Date'].min()
+            max_date_ex = data['ex_d']['Date'].max()
+            
             # Tạo bộ lọc thời gian riêng biệt cho Đồ thị Tỷ Giá
             st.markdown("##### 📅 Khung thời gian phân tích Tỷ giá trung tâm")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t5_ex = pd.to_datetime(st.date_input("Từ ngày (Tỷ giá)", pd.to_datetime("2026-01-01"), key="start_t5_ex"))
+                start_date_t5_ex = pd.to_datetime(st.date_input("Từ ngày (Tỷ giá)", min_date_ex, key="start_t5_ex"))
             with c2:
-                end_date_t5_ex = pd.to_datetime(st.date_input("Đến ngày (Tỷ giá)", pd.to_datetime("2026-06-30"), key="end_t5_ex"))
+                end_date_t5_ex = pd.to_datetime(st.date_input("Đến ngày (Tỷ giá)", max_date_ex, key="end_t5_ex"))
     
             ex_df = data['ex_d'][(data['ex_d']['Date'] >= start_date_t5_ex) & (data['ex_d']['Date'] <= end_date_t5_ex)]
             available_cols_ex = get_numeric_cols(ex_df)
@@ -698,17 +797,21 @@ if data:
         if 'inf' in data:
             inf = data['inf']
             
+            # Đảm bảo cột 'Ngày' ở định dạng datetime trước khi lấy min/max
+            inf['Ngày'] = pd.to_datetime(inf['Ngày'])
+            
+            # Tự động tính toán ngày bắt đầu và kết thúc động từ dữ liệu thực tế
+            min_date_inf = inf['Ngày'].min()
+            max_date_inf = inf['Ngày'].max()
+            
             # Tạo bộ lọc thời gian riêng biệt cho Đồ thị Lạm phát
             st.markdown("##### 📅 Khung thời gian phân tích Lạm phát")
             c3, c4 = st.columns(2)
             with c3:
-                start_date_inf = st.date_input("Từ ngày (Lạm phát)", pd.to_datetime("2025-07-01"), key="start_t5_inf")
+                start_date_inf = st.date_input("Từ ngày (Lạm phát)", min_date_inf, key="start_t5_inf")
             with c4:
-                end_date_inf = st.date_input("Đến ngày (Lạm phát)", pd.to_datetime("2026-06-30"), key="end_t5_inf")
+                end_date_inf = st.date_input("Đến ngày (Lạm phát)", max_date_inf, key="end_t5_inf")
     
-            # Đảm bảo cột 'Ngày' ở định dạng datetime để lọc chính xác
-            inf['Ngày'] = pd.to_datetime(inf['Ngày'])
-            
             # Lọc dữ liệu theo thời gian người dùng chọn
             df_inf = inf[(inf["Ngày"] >= pd.to_datetime(start_date_inf)) & (inf["Ngày"] <= pd.to_datetime(end_date_inf))]
             
@@ -952,9 +1055,6 @@ if data:
                         key="macro_asset_select"
                     )
 
-                # =====================================================================
-                # LOGIC VẼ ĐỒ THỊ TỰ ĐỘNG PHÂN TÁCH TRỤC ĐƠN VỊ THÔNG MINH (ĐÃ SỬA LỖI NHẬM TRỤC CÁN CÂN)
-                # =====================================================================
                 # =====================================================================
                 # LOGIC VẼ ĐỒ THỊ TỰ ĐỘNG PHÂN TÁCH THANG ĐO ĐỘNG (ĐA ĐỒ THỊ NẾU > 2 THANG ĐO)
                 # =====================================================================
