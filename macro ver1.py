@@ -812,16 +812,29 @@ if data:
             data['ex_d']['Date'] = pd.to_datetime(data['ex_d']['Date'])
             
             # Tự động tính toán ngày bắt đầu và kết thúc động từ dữ liệu thực tế
-            min_date_ex = data['ex_d']['Date'].min()
-            max_date_ex = data['ex_d']['Date'].max()
+            min_date_ex = data['ex_d']['Date'].min().to_pydatetime()
+            max_date_ex = data['ex_d']['Date'].max().to_pydatetime()
             
             # Tạo bộ lọc thời gian riêng biệt cho Đồ thị Tỷ Giá
             st.markdown("##### 📅 Khung thời gian phân tích")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t5_ex = pd.to_datetime(st.date_input("Từ ngày (Tỷ giá)", min_date_ex, key="start_t5_ex"))
+                # BỔ SUNG: min_value và max_value giúp mở rộng lịch chọn đến ngày lớn nhất trong dữ liệu
+                start_date_t5_ex = pd.to_datetime(st.date_input(
+                    "Từ ngày (Tỷ giá)", 
+                    value=min_date_ex, 
+                    min_value=min_date_ex, 
+                    max_value=max_date_ex, 
+                    key="start_t5_ex"
+                ))
             with c2:
-                end_date_t5_ex = pd.to_datetime(st.date_input("Đến ngày (Tỷ giá)", max_date_ex, key="end_t5_ex"))
+                end_date_t5_ex = pd.to_datetime(st.date_input(
+                    "Đến ngày (Tỷ giá)", 
+                    value=max_date_ex, 
+                    min_value=min_date_ex, 
+                    max_value=max_date_ex, 
+                    key="end_t5_ex"
+                ))
     
             ex_df = data['ex_d'][(data['ex_d']['Date'] >= start_date_t5_ex) & (data['ex_d']['Date'] <= end_date_t5_ex)]
             available_cols_ex = get_numeric_cols(ex_df)
@@ -840,7 +853,6 @@ if data:
                 )
                 
                 if len(ex_df) > 1:
-                    # Điểm đầu và điểm cuối
                     v_start = ex_df[selected_ex_col].iloc[0]
                     v_end = ex_df[selected_ex_col].iloc[-1]
                     
@@ -855,9 +867,9 @@ if data:
             st.warning("Không tìm thấy dữ liệu tỷ giá ('ex_d')")
     
         # =========================================================================
-        # --- ĐỒ THỊ 2: KỲ VỌNG LẠM PHÁT & THAY ĐỔI CPI (BẢN TƯƠNG TÁC PLOTLY) ---
+        # --- ĐỒ THỊ 2: KỲ VỌNG LẠM PHÁT & THAY ĐỔI CPI ---
         # =========================================================================
-        st.markdown("---") # Đường kẻ phân cách giữa 2 phần
+        st.markdown("---") 
         st.subheader("2. Kỳ vọng lạm phát và thay đổi CPI")
         
         if 'inf' in data:
@@ -867,25 +879,36 @@ if data:
             inf['Ngày'] = pd.to_datetime(inf['Ngày'])
             
             # Tự động tính toán ngày bắt đầu và kết thúc động từ dữ liệu thực tế
-            min_date_inf = inf['Ngày'].min()
-            max_date_inf = inf['Ngày'].max()
+            min_date_inf = inf['Ngày'].min().to_pydatetime()
+            max_date_inf = inf['Ngày'].max().to_pydatetime()
             
             # Tạo bộ lọc thời gian riêng biệt cho Đồ thị Lạm phát
             st.markdown("##### 📅 Khung thời gian phân tích")
             c3, c4 = st.columns(2)
             with c3:
-                start_date_inf = st.date_input("Từ ngày (Lạm phát)", min_date_inf, key="start_t5_inf")
+                # BỔ SUNG: Định nghĩa rõ khoảng min/max tương tự đồ thị 1 để không bị khóa năm
+                start_date_inf = st.date_input(
+                    "Từ ngày (Lạm phát)", 
+                    value=min_date_inf, 
+                    min_value=min_date_inf, 
+                    max_value=max_date_inf, 
+                    key="start_t5_inf"
+                )
             with c4:
-                end_date_inf = st.date_input("Đến ngày (Lạm phát)", max_date_inf, key="end_t5_inf")
+                end_date_inf = st.date_input(
+                    "Đến ngày (Lạm phát)", 
+                    value=max_date_inf, 
+                    min_value=min_date_inf, 
+                    max_value=max_date_inf, 
+                    key="end_t5_inf"
+                )
     
             # Lọc dữ liệu theo thời gian người dùng chọn
             df_inf = inf[(inf["Ngày"] >= pd.to_datetime(start_date_inf)) & (inf["Ngày"] <= pd.to_datetime(end_date_inf))]
             
             if not df_inf.empty:
-                # Tạo đối tượng đồ thị bằng Plotly go.Figure() thay thế hoàn toàn cho plt.subplots()
                 fig_inf = go.Figure()
                 
-                # Đường 1: Kỳ vọng lạm phát - Marker hình tròn (circle)
                 fig_inf.add_trace(go.Scatter(
                     x=df_inf['Kỳ'],
                     y=df_inf["Kỳ vọng lạm phát (BQ năm nay so với năm trước)"],
@@ -895,7 +918,6 @@ if data:
                     marker=dict(symbol="circle", size=8)
                 ))
                 
-                # Đường 2: Thay đổi CPI - Marker hình vuông (square / chữ 's' trong bản gốc)
                 fig_inf.add_trace(go.Scatter(
                     x=df_inf['Kỳ'],
                     y=df_inf["Thay đổi CPI (% so với cùng kỳ trước)"],
@@ -905,7 +927,6 @@ if data:
                     marker=dict(symbol="square", size=8)
                 ))
                 
-                # Định dạng cấu trúc hiển thị giống hệt phong cách bản gốc cũ
                 fig_inf.update_layout(
                     title=dict(
                         text="Kỳ vọng lạm phát và thay đổi CPI (%)",
@@ -913,23 +934,22 @@ if data:
                         pad=dict(b=15)
                     ),
                     template="plotly_white",
-                    xaxis=dict(tickangle=45, title=""), # Góc nghiêng trục X 45 độ
+                    xaxis=dict(tickangle=45, title=""),
                     yaxis=dict(
                         title="",
                         showgrid=True,
-                        gridcolor='rgba(211, 211, 211, 0.7)' # Bật grid ngang giống Excel/Matplotlib
+                        gridcolor='rgba(211, 211, 211, 0.7)'
                     ),
                     legend=dict(
-                        orientation="h",       # Chú thích nằm ngang phía dưới
-                        yanchor="top", 
-                        y=-0.25, 
-                        xanchor="center", 
+                        orientation="h",
+                        yanchor="top",
+                        y=-0.25,
+                        xanchor="center",
                         x=0.5
                     ),
                     margin=dict(l=40, r=40, t=50, b=40)
                 )
                 
-                # Hiển thị đồ thị Plotly có tính năng tương tác lên Streamlit
                 st.plotly_chart(fig_inf, use_container_width=True)
                 
             else:
