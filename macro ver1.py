@@ -161,13 +161,13 @@ if data:
             # Bổ sung chọn tần suất riêng cho Đồ thị 1
             freq_t1 = st.radio(
                 "Chọn tần suất hiển thị (Đồ thị 1):",
-                ["Theo quý (Dữ liệu Quý)", "Theo tháng (Dữ liệu Tháng)"],
+                ["Theo quý", "Theo tháng"],
                 horizontal=True,
                 key="freq_selector_t1"
             )
             
             # Gán nguồn dữ liệu dựa trên tần suất Đồ thị 1
-            vnibor_source_t1 = data['vnibor'] if freq_t1 == "Theo tháng (Dữ liệu Tháng)" else data['vnibor_q']
+            vnibor_source_t1 = data['vnibor'] if freq_t1 == "Theo tháng" else data['vnibor_q']
 
             # THIẾT LẬP THỜI GIAN ĐỘNG CHO ĐỒ THỊ 1 DỰA TRÊN VNIBOR SOURCE
             min_date_t1 = vnibor_source_t1['Date'].min().to_pydatetime() if not vnibor_source_t1.empty else pd.to_datetime("2022-01-01").to_pydatetime()
@@ -228,15 +228,15 @@ if data:
             # Bổ sung chọn tần suất riêng cho Đồ thị 2
             freq_t2 = st.radio(
                 "Chọn tần suất hiển thị (Đồ thị 2):",
-                ["Theo quý (Dữ liệu Quý)", "Theo tháng (Dữ liệu Tháng)"],
+                ["Theo quý", "Theo tháng"],
                 horizontal=True,
                 key="freq_selector_t2"
             )
             
             # Gán nguồn dữ liệu động dựa trên tần suất Đồ thị 2
-            vnibor_source_t2 = data['vnibor'] if freq_t2 == "Theo tháng (Dữ liệu Tháng)" else data['vnibor_q']
+            vnibor_source_t2 = data['vnibor'] if freq_t2 == "Theo tháng" else data['vnibor_q']
             
-            if freq_t2 == "Theo tháng (Dữ liệu Tháng)" and 'bond_y_m' in data:
+            if freq_t2 == "Theo tháng" and 'bond_y_m' in data:
                 bond_source_t2 = data['bond_y_m']
             else:
                 bond_source_t2 = data['bond_y_q']
