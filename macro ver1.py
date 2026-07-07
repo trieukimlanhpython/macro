@@ -762,19 +762,26 @@ if data:
                 def_z2 = col_gpr_vnm_def if col_gpr_vnm_def in available_cols_wui else available_cols_wui[min(1, len(available_cols_wui)-1)]
                 sel_z2 = st.selectbox("Chọn chỉ tiêu Quốc gia cụ thể (Trục phải):", available_cols_wui, index=available_cols_wui.index(def_z2), key="t4_g3_r")
             
-            fig_twin3 = go.Figure()
-            
-            # Khử định dạng xuống dòng '\n' khi hiển thị nhãn Legend và tiêu đề Trục tọa độ
-            clean_label_z1 = sel_z1.split(':')[0].strip()
-            clean_label_z2 = sel_z2.split(':')[0].strip()
-            
-            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z1], name=f"{clean_label_z1} (Trục trái)", mode='lines+markers', line=dict(color='#2ca02c')))
-            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z2], name=f"{clean_label_z2} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='#ff7f0e')))
-            
             fig_twin3.update_layout(
                 template="plotly_white",
-                yaxis=dict(title=clean_label_z1, titlefont=dict(color='#2ca02c'), tickfont=dict(color='#2ca02c')),
-                yaxis2=dict(title=clean_label_z2, titlefont=dict(color='#ff7f0e'), tickfont=dict(color='#ff7f0e'), overlaying='y', side='right'),
+                # Sửa cấu trúc yaxis 1 (Trục trái)
+                yaxis=dict(
+                    title=dict(
+                        text=clean_label_z1,
+                        font=dict(color='#2ca02c')
+                    ),
+                    tickfont=dict(color='#2ca02c')
+                ),
+                # Sửa cấu trúc yaxis 2 (Trục phải)
+                yaxis2=dict(
+                    title=dict(
+                        text=clean_label_z2,
+                        font=dict(color='#ff7f0e')
+                    ),
+                    tickfont=dict(color='#ff7f0e'),
+                    overlaying='y', 
+                    side='right'
+                ),
                 legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
             )
             st.plotly_chart(fig_twin3, use_container_width=True)
