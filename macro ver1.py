@@ -762,6 +762,18 @@ if data:
                 def_z2 = col_gpr_vnm_def if col_gpr_vnm_def in available_cols_wui else available_cols_wui[min(1, len(available_cols_wui)-1)]
                 sel_z2 = st.selectbox("Chọn chỉ tiêu Quốc gia cụ thể (Trục phải):", available_cols_wui, index=available_cols_wui.index(def_z2), key="t4_g3_r")
             
+            # --- BƯỚC 1: XỬ LÝ CHUỖI NHÃN SẠCH CHỮ TRƯỚC KHI TRUYỀN VÀO ĐỒ THỊ ---
+            clean_label_z1 = sel_z1.split(':')[0].strip()
+            clean_label_z2 = sel_z2.split(':')[0].strip()
+            
+            # --- BƯỚC 2: KHỞI TẠO ĐỐI TƯỢNG FIG_TWIN3 ---
+            fig_twin3 = go.Figure()
+            
+            # --- BƯỚC 3: THÊM CÁC ĐƯỜNG BIỂU DIỄN DATA ---
+            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z1], name=f"{clean_label_z1} (Trục trái)", mode='lines+markers', line=dict(color='#2ca02c')))
+            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z2], name=f"{clean_label_z2} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='#ff7f0e')))
+            
+            # --- BƯỚC 4: CẬP NHẬT GIAO DIỆN (ĐOẠN LỖI CŨ GIỜ ĐÃ AN TOÀN) ---
             fig_twin3.update_layout(
                 template="plotly_white",
                 # Sửa cấu trúc yaxis 1 (Trục trái)
@@ -784,6 +796,8 @@ if data:
                 ),
                 legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
             )
+            
+            # --- BƯỚC 5: COI NHƯ HOÀN TẤT VÀ ĐẨY LÊN GIAO DIỆN STREAMLIT ---
             st.plotly_chart(fig_twin3, use_container_width=True)
     # ----------------------------------------------------------------------
     # MODE 5: TỶ GIÁ TRUNG TÂM & KỲ VỌNG LẠM PHÁT (TƯƠNG ỨNG TAB 5 CŨ)
