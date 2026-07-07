@@ -342,12 +342,17 @@ if data:
             # Giao diện bộ chọn chỉ tiêu song song
             cc1, cc2 = st.columns(2)
             with cc1:
-                default_hd1 = [c for c in hd_cols_ls1 if 'Kỳ hạn > 12 tháng' in c][:2]
-                if not default_hd1 and hd_cols_ls1: default_hd1 = hd_cols_ls1[:2]
+                # SỬA TẠI ĐÂY: Thay [:2] bằng [:1] để chỉ lấy 1 cột đầu tiên tìm thấy
+                default_hd1 = [c for c in hd_cols_ls1 if 'Kỳ hạn > 12 tháng' in c][:1]
+                # SỬA TẠI ĐÂY: Nếu không tìm thấy từ khóa, cũng chỉ lấy đúng 1 cột đầu tiên của nhóm huy động
+                if not default_hd1 and hd_cols_ls1: default_hd1 = hd_cols_ls1[:1]
                 selected_hd1 = st.multiselect("🏦 Chọn Lãi suất Huy động (ls1):", hd_cols_ls1, default=default_hd1, key="sel_hd_ls1")
+                
             with cc2:
-                default_cv1 = [c for c in cv_cols_ls1 if 'SXKD thông thường (Nhóm NHTM NN)' in c][:2]
-                if not default_cv1 and cv_cols_ls1: default_cv1 = cv_cols_ls1[:2]
+                # SỬA TẠI ĐÂY: Thay [:2] bằng [:1] để chỉ lấy 1 cột đầu tiên tìm thấy
+                default_cv1 = [c for c in cv_cols_ls1 if 'SXKD thông thường (Nhóm NHTM NN)' in c][:1]
+                # SỬA TẠI ĐÂY: Nếu không tìm thấy từ khóa, cũng chỉ lấy đúng 1 cột đầu tiên của nhóm cho vay
+                if not default_cv1 and cv_cols_ls1: default_cv1 = cv_cols_ls1[:1]
                 selected_cv1 = st.multiselect("💸 Chọn Lãi suất Cho vay (ls1):", cv_cols_ls1, default=default_cv1, key="sel_cv_ls1")
 
             selected_t2_g1 = selected_hd1 + selected_cv1
