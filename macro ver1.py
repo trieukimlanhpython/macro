@@ -372,8 +372,8 @@ if data:
                     template="plotly_white", 
                     hovermode="x unified",
                     height=520,
-                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
-                    xaxis=dict(tickangle=45)
+                    legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
+                    #xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig3, use_container_width=True)
 
@@ -463,8 +463,8 @@ if data:
                     yaxis=dict(range=[max(0, min_val - 1.5), max_val + 1.5]), 
                     template="plotly_white",
                     height=520,
-                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
-                    xaxis=dict(title="Kỳ báo cáo", tickangle=45)
+                    legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5),
+                    xaxis=dict(title="Kỳ báo cáo")#, tickangle=45)
                 )
                 st.plotly_chart(fig_bar2, use_container_width=True)
         else:
