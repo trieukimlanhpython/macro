@@ -275,7 +275,6 @@ if data:
                     xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig2, use_container_width=True)
-   
     # ----------------------------------------------------------------------
     # MODE 2: LÃI SUẤT THỊ TRƯỜNG 1 (TƯƠNG ỨNG TAB 2 CŨ)
     # ----------------------------------------------------------------------
@@ -283,31 +282,27 @@ if data:
         if 'ls1' in data and 'ls2' in data:
             
             # =====================================================================
-            # CHUNG: Khung thời gian phân tích cho toàn bộ phân hệ
-            # =====================================================================
-            st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ Lãi suất Thị trường 1)")
-            c1, c2 = st.columns(2)
-            with c1:
-                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Phân hệ 1)", pd.to_datetime("2022-01-01"), key="start_t2"))
-            with c2:
-                end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 1)", pd.to_datetime("2026-06-30"), key="end_t2"))
-
-            # Lọc dữ liệu theo thời gian
-            ls1_df = data['ls1'][(data['ls1']['Date'] >= start_date_t2) & (data['ls1']['Date'] <= end_date_t2)]
-            ls2_df = data['ls2'][(data['ls2']['Date'] >= start_date_t2) & (data['ls2']['Date'] <= end_date_t2)]
-
-            # =====================================================================
             # ĐỒ THỊ 1: CHI TIẾT LÃI SUẤT HUY ĐỘNG & CHO VAY (DỮ LIỆU LS1)
             # =====================================================================
-            st.write("---")
             st.subheader("1. Diễn biến Lãi suất Huy động và Cho vay chi tiết (Tháng)")
+            
+            # Bộ lọc thời gian độc lập cho Đồ thị 1
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
+            c1_t1, c2_t1 = st.columns(2)
+            with c1_t1:
+                start_date_ls1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2022-01-01"), key="start_ls1"))
+            with c2_t1:
+                end_date_ls1 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 1)", pd.to_datetime("2026-06-30"), key="end_ls1"))
+
+            # Lọc dữ liệu ls1 theo khung thời gian riêng
+            ls1_df = data['ls1'][(data['ls1']['Date'] >= start_date_ls1) & (data['ls1']['Date'] <= end_date_ls1)]
             
             # Quét và phân loại cột cho bảng ls1
             all_cols_ls1 = get_numeric_cols(ls1_df)
             hd_cols_ls1 = [c for c in all_cols_ls1 if 'LSHĐ' in c]
             cv_cols_ls1 = [c for c in all_cols_ls1 if any(k in c for k in ['LSCV', 'LSCH', 'Cho vay'])]
 
-            # Giao diện bộ chọn song song
+            # Giao diện bộ chọn chỉ tiêu song song
             cc1, cc2 = st.columns(2)
             with cc1:
                 default_hd1 = [c for c in hd_cols_ls1 if 'Kỳ hạn > 12 tháng' in c][:2]
@@ -339,6 +334,80 @@ if data:
                     xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig3, use_container_width=True)
+
+            # =====================================================================
+            # ĐỒ THỊ 2: LÃI SUẤT HUY ĐỘNG & CHO VAY TỔNG HỢP (DỮ LIỆU LS2)
+            # =====================================================================
+            st.write("---")
+            st.subheader("2. Diễn biến Lãi suất Huy động và Cho vay tổng hợp (Cột nhóm)")
+            
+            # Bộ lọc thời gian độc lập cho Đồ thị 2
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
+            c1_t2, c2_t2 = st.columns(2)
+            with c1_t2:
+                start_date_ls2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2022-01-01"), key="start_ls2"))
+            with c2_t2:
+                end_date_ls2 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 2)", pd.to_datetime("2026-06-30"), key="end_ls2"))
+
+            # Lọc dữ liệu ls2 theo khung thời gian riêng
+            ls2_df = data['ls2'][(data['ls2']['Date'] >= start_date_ls2) & (data['ls2']['Date'] <= end_date_ls2)]
+            
+            # Quét và phân loại cột cho bảng ls2
+            all_cols_ls2 = get_numeric_cols(ls2_df)
+            hd_cols_ls2 = [c for c in all_cols_ls2 if 'huy động' in c.lower()]
+            cv_cols_ls2 = [c for c in all_cols_ls2 if 'cho vay' in c.lower()]
+
+            # Giao diện bộ chọn chỉ tiêu song song
+            cc3, cc4 = st.columns(2)
+            with cc3:
+                default_hd2 = [c for c in hd_cols_ls2 if 'trên 12 tháng' in c.lower()]
+                if not default_hd2 and hd_cols_ls2: default_hd2 = hd_cols_ls2[:2]
+                selected_hd2 = st.multiselect("🏦 Chọn Lãi suất Huy động tổng hợp (ls2):", hd_cols_ls2, default=default_hd2, key="sel_hd_ls2")
+            with cc4:
+                default_cv2 = [c for c in cv_cols_ls2 if 'trung và dài hạn' in c.lower()]
+                if not default_cv2 and cv_cols_ls2: default_cv2 = cv_cols_ls2[:2]
+                selected_cv2 = st.multiselect("💸 Chọn Lãi suất Cho vay tổng hợp (ls2):", cv_cols_ls2, default=default_cv2, key="sel_cv_ls2")
+
+            selected_bar2 = selected_hd2 + selected_cv2
+
+            if selected_bar2:
+                # Kiểm tra định dạng phần trăm thập phân thô
+                is_decimal = ls2_df[selected_bar2[0]].max() <= 1
+                
+                # Nhân 100 nếu dữ liệu là dạng thập phân
+                plot_df = ls2_df.copy()
+                if is_decimal:
+                    for col in selected_bar2:
+                        plot_df[col] = plot_df[col] * 100
+
+                fig_bar2 = px.bar(
+                    plot_df, 
+                    x='Kỳ' if 'Kỳ' in plot_df.columns else 'Date', 
+                    y=selected_bar2, 
+                    barmode='group', 
+                    labels={'value': 'Lãi suất (%)', 'variable': 'Chỉ tiêu'},
+                    color_discrete_sequence=['#3b71ca', '#f17a28', '#708090', '#008080']
+                )
+                
+                # Định dạng nhãn hiển thị đầu cột
+                fig_bar2.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
+                
+                # Tính toán biên trục Y linh hoạt
+                max_val = max([plot_df[c].max() for c in selected_bar2])
+                min_val = min([plot_df[c].min() for c in selected_bar2])
+                
+                fig_bar2.update_layout(
+                    title="So sánh biên độ lãi suất theo các kỳ gần đây",
+                    yaxis_title="Lãi suất (%)",
+                    yaxis=dict(range=[max(0, min_val - 1.5), max_val + 1.5]), 
+                    template="plotly_white",
+                    height=520,
+                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
+                    xaxis=dict(title="Kỳ báo cáo", tickangle=45)
+                )
+                st.plotly_chart(fig_bar2, use_container_width=True)
+        else:
+            st.error("Không tìm thấy đủ dữ liệu của hai sheet 'ls1' và 'ls2' trong hệ thống!")
 
             # =====================================================================
             # ĐỒ THỊ 2: LÃI SUẤT HUY ĐỘNG & CHO VAY TỔNG HỢP (DỮ LIỆU LS2)
