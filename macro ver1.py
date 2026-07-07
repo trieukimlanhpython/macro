@@ -410,12 +410,12 @@ if data:
             cc3, cc4 = st.columns(2)
             with cc3:
                 default_hd2 = [c for c in hd_cols_ls2 if 'trên 12 tháng' in c.lower()]
-                if not default_hd2 and hd_cols_ls2: default_hd2 = hd_cols_ls2[:2]
+                if not default_hd2 and hd_cols_ls2: default_hd2 = hd_cols_ls2[:1]
                 selected_hd2 = st.multiselect("🏦 Chọn Lãi suất Huy động tổng hợp (ls2):", hd_cols_ls2, default=default_hd2, key="sel_hd_ls2")
             with cc4:
                 default_cv2 = [c for c in cv_cols_ls2 if 'trung và dài hạn' in c.lower()]
                 # Kiểm tra nếu danh sách mặc định trống thì tự động lấy 2 cột đầu tiên
-                if not default_cv2: default_cv2 = cv_cols_ls2[:2]
+                if not default_cv2: default_cv2 = cv_cols_ls2[:1]
                 selected_cv2 = st.multiselect("💸 Chọn Lãi suất Cho vay tổng hợp (ls2):", cv_cols_ls2, default=default_cv2, key="sel_cv_ls2")
 
             selected_bar2 = selected_hd2 + selected_cv2
