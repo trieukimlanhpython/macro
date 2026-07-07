@@ -55,7 +55,7 @@ def load_and_process_data(file_or_url):
         # Ánh xạ tên các sheet tương ứng với cấu hình của bạn
         sheets_mapping = {
             'vnibor_q': 'vnibor_q', 'vnibor': 'vnibor', 'bond_y_q': 'bond_y_q',
-            'ex_d': 'ex_d', 'ls': 'ls2', 'credit': 'credit', 'm2': 'm2',
+            'ex_d': 'ex_d', 'ls2': 'ls2', 'credit': 'credit', 'm2': 'm2',
             'ls_wui': 'ls_wui', 'omo': 'omo', 'macro': 'macro', 'inf': 'inf'
         }
         
@@ -229,7 +229,7 @@ if data:
     # MODE 2: LÃI SUẤT THỊ TRƯỜNG 1 (TƯƠNG ỨNG TAB 2 CŨ)
     # ----------------------------------------------------------------------
     elif menu_selection == "📈 Lãi suất thị trường 1":
-        if 'ls' in data:
+        if 'ls2' in data:
             # Tạo bộ lọc thời gian riêng cho Tab 2
             st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ 2)")
             c1, c2 = st.columns(2)
@@ -238,7 +238,7 @@ if data:
             with c2:
                 end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 2)", pd.to_datetime("2026-06-30"), key="end_t2"))
 
-            ls_df = data['ls'][(data['ls']['Date'] >= start_date_t2) & (data['ls']['Date'] <= end_date_t2)]
+            ls_df = data['ls2'][(data['ls2']['Date'] >= start_date_t2) & (data['ls2']['Date'] <= end_date_t2)]
             available_cols_ls = get_numeric_cols(ls_df)
             
             col_hd_thap_def = "   Lãi suất huy động bình quân trên 12 tháng (thấp nhất)"
@@ -325,7 +325,7 @@ if data:
             with c_cv2:
                 end_cv = pd.to_datetime(st.date_input("Đến ngày (Lãi suất Cho vay)", pd.to_datetime("2026-06-30"), key="end_t2_cv"))
             
-            ls_cv_df = data['ls'][(data['ls']['Date'] >= start_cv) & (data['ls']['Date'] <= end_cv)].copy()
+            ls_cv_df = data['ls2'][(data['ls2']['Date'] >= start_cv) & (data['ls2']['Date'] <= end_cv)].copy()
             available_cols_ls_cv = get_numeric_cols(ls_cv_df)
             
             default_bar2 = [c for c in [col_cv_thap_def, col_cv_cao_def] if c in available_cols_ls_cv]
