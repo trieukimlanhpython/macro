@@ -670,50 +670,47 @@ if data:
     # ----------------------------------------------------------------------
     elif menu_selection == "🌍 Chỉ số Bất ổn & FFR":
         if 'ls_wui' in data:
+            # Ép kiểu cột ngày về datetime để xử lý chính xác
+            data['ls_wui']['Date'] = pd.to_datetime(data['ls_wui']['Date'])
             
-            # THIẾT LẬP THỜI GIAN ĐỘNG CHO SHEET LS_WUI
+            # THIẾT LẬP THỜI GIAN ĐỘNG GỐC CHO SHEET LS_WUI
             min_date_wui = data['ls_wui']['Date'].min().to_pydatetime() if not data['ls_wui'].empty else pd.to_datetime("2022-01-01").to_pydatetime()
             max_date_wui = data['ls_wui']['Date'].max().to_pydatetime() if not data['ls_wui'].empty else pd.to_datetime("2026-06-30").to_pydatetime()
 
-            # Tạo bộ lọc thời gian riêng cho Tab 4
-            st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ 4)")
-            c1, c2 = st.columns(2)
-            with c1:
-                start_date_t4 = pd.to_datetime(st.date_input(
-                    "Từ ngày (Phân hệ 4)", 
-                    min_value=min_date_wui, max_value=max_date_wui, value=min_date_wui, 
-                    key="start_t4"
-                ))
-            with c2:
-                end_date_t4 = pd.to_datetime(st.date_input(
-                    "Đến ngày (Phân hệ 4)", 
-                    min_value=min_date_wui, max_value=max_date_wui, value=max_date_wui, 
-                    key="end_t4"
-                ))
-
-            wui_df = data['ls_wui'][(data['ls_wui']['Date'] >= start_date_t4) & (data['ls_wui']['Date'] <= end_date_t4)]
-            available_cols_wui = get_numeric_cols(wui_df)
-            
+            # Khai báo sẵn các tên cột chỉ tiêu định danh
             col_wui_def = "WUI, GDP weighted average"
             col_bbd_def = "BBD MPU Index Based on Access World News"
             col_ffr_def = "Monetary policy-related, Rate, Percent per annum"
-            # BỔ SUNG 2 CỘT MỚI (Đối chiếu chính xác theo ảnh cấu trúc file của bạn)
             col_gpr_def = "GPR: Recent GPR\n(Index: 1985:2019=100)"
             col_gpr_vnm_def = "GPRHC_VNM: Country GPR Historical:\nPercent of articles\n(Vietnam)"
-            # Đồ thị 1: Trục tung kép (Twin X-axis) WUI vs BBD MPU
+
+            # =========================================================================
+            # ĐỒ THỊ 1: WUI vs BBD MPU
+            # =========================================================================
             st.subheader("1. Chỉ số Bất ổn Toàn cầu (WUI) và Bất ổn Chính sách Tiền tệ Mỹ (MPUI)")
+            
+            # Khung thời gian riêng cho Đồ thị 1
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
+            c1_g1, c2_g1 = st.columns(2)
+            with c1_g1:
+                start_date_g1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", min_value=min_date_wui, max_value=max_date_wui, value=min_date_wui, key="start_t4_g1"))
+            with c2_g1:
+                end_date_g1 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 1)", min_value=min_date_wui, max_value=max_date_wui, value=max_date_wui, key="end_t4_g1"))
+
+            wui_df1 = data['ls_wui'][(data['ls_wui']['Date'] >= start_date_g1) & (data['ls_wui']['Date'] <= end_date_g1)]
+            available_cols_g1 = get_numeric_cols(wui_df1)
             
             cx1, cx2 = st.columns(2)
             with cx1:
-                def_w1 = col_wui_def if col_wui_def in available_cols_wui else available_cols_wui[0]
-                sel_w1 = st.selectbox("Chọn chỉ tiêu Trục trái (Ví dụ WUI):", available_cols_wui, index=available_cols_wui.index(def_w1), key="t4_g1_l")
+                def_w1 = col_wui_def if col_wui_def in available_cols_g1 else available_cols_g1[0]
+                sel_w1 = st.selectbox("Chọn chỉ tiêu Trục trái (Ví dụ WUI):", available_cols_g1, index=available_cols_g1.index(def_w1), key="t4_g1_l")
             with cx2:
-                def_w2 = col_bbd_def if col_bbd_def in available_cols_wui else available_cols_wui[min(1, len(available_cols_wui)-1)]
-                sel_w2 = st.selectbox("Chọn chỉ tiêu Trục phải (Ví dụ BBD MPU):", available_cols_wui, index=available_cols_wui.index(def_w2), key="t4_g1_r")
+                def_w2 = col_bbd_def if col_bbd_def in available_cols_g1 else available_cols_g1[min(1, len(available_cols_g1)-1)]
+                sel_w2 = st.selectbox("Chọn chỉ tiêu Trục phải (Ví dụ BBD MPU):", available_cols_g1, index=available_cols_g1.index(def_w2), key="t4_g1_r")
             
             fig_twin1 = go.Figure()
-            fig_twin1.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_w1], name=f"{sel_w1.split(',')[0]} (Trục trái)", mode='lines+markers'))
-            fig_twin1.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_w2], name=f"{sel_w2.split(',')[0]} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='red')))
+            fig_twin1.add_trace(go.Scatter(x=wui_df1['Date'], y=wui_df1[sel_w1], name=f"{sel_w1.split(',')[0]} (Trục trái)", mode='lines+markers'))
+            fig_twin1.add_trace(go.Scatter(x=wui_df1['Date'], y=wui_df1[sel_w2], name=f"{sel_w2.split(',')[0]} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='red')))
             
             fig_twin1.update_layout(
                 template="plotly_white",
@@ -723,21 +720,35 @@ if data:
             )
             st.plotly_chart(fig_twin1, use_container_width=True)
             
-            # Đồ thị 2: Trục tung kép FFR vs BBD MPU
+            # =========================================================================
+            # ĐỒ THỊ 2: FFR vs BBD MPU
+            # =========================================================================
+            st.write("---")
             st.subheader("2. Lãi suất liên bang Fed (FFR) và Chỉ số Bất ổn Chính sách tiền tệ Mỹ (MPUI)")
+            
+            # Khung thời gian riêng cho Đồ thị 2
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
+            c1_g2, c2_g2 = st.columns(2)
+            with c1_g2:
+                start_date_g2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", min_value=min_date_wui, max_value=max_date_wui, value=min_date_wui, key="start_t4_g2"))
+            with c2_g2:
+                end_date_g2 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 2)", min_value=min_date_wui, max_value=max_date_wui, value=max_date_wui, key="end_t4_g2"))
+
+            wui_df2 = data['ls_wui'][(data['ls_wui']['Date'] >= start_date_g2) & (data['ls_wui']['Date'] <= end_date_g2)]
+            available_cols_g2 = get_numeric_cols(wui_df2)
             
             cy1, cy2 = st.columns(2)
             with cy1:
-                def_f1 = col_ffr_def if col_ffr_def in available_cols_wui else available_cols_wui[min(2, len(available_cols_wui)-1)]
-                sel_f1 = st.selectbox("Chọn chỉ tiêu Lãi suất chính sách (Trục trái):", available_cols_wui, index=available_cols_wui.index(def_f1), key="t4_g2_l")
+                def_f1 = col_ffr_def if col_ffr_def in available_cols_g2 else available_cols_g2[min(2, len(available_cols_g2)-1)]
+                sel_f1 = st.selectbox("Chọn chỉ tiêu Lãi suất chính sách (Trục trái):", available_cols_g2, index=available_cols_g2.index(def_f1), key="t4_g2_l")
             with cy2:
-                def_f2 = col_bbd_def if col_bbd_def in available_cols_wui else available_cols_wui[min(1, len(available_cols_wui)-1)]
-                sel_f2 = st.selectbox("Chọn chỉ tiêu Bất ổn vĩ mô công cụ (Trục phải):", available_cols_wui, index=available_cols_wui.index(def_f2), key="t4_g2_r")
+                def_f2 = col_bbd_def if col_bbd_def in available_cols_g2 else available_cols_g2[min(1, len(available_cols_g2)-1)]
+                sel_f2 = st.selectbox("Chọn chỉ tiêu Bất ổn vĩ mô công cụ (Trục phải):", available_cols_g2, index=available_cols_g2.index(def_f2), key="t4_g2_r")
             
             fig_twin2 = go.Figure()
-            y_f1 = wui_df[sel_f1]*100 if wui_df[sel_f1].max() <= 1 and "Percent" in sel_f1 else wui_df[sel_f1]
-            fig_twin2.add_trace(go.Scatter(x=wui_df['Date'], y=y_f1, name=f"{sel_f1.split(',')[0]} (Trục trái)", mode='lines'))
-            fig_twin2.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_f2], name=f"{sel_f2.split(',')[0]} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='red')))
+            y_f1 = wui_df2[sel_f1]*100 if wui_df2[sel_f1].max() <= 1 and "Percent" in sel_f1 else wui_df2[sel_f1]
+            fig_twin2.add_trace(go.Scatter(x=wui_df2['Date'], y=y_f1, name=f"{sel_f1.split(',')[0]} (Trục trái)", mode='lines'))
+            fig_twin2.add_trace(go.Scatter(x=wui_df2['Date'], y=wui_df2[sel_f2], name=f"{sel_f2.split(',')[0]} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='red')))
             
             fig_twin2.update_layout(
                 template="plotly_white",
@@ -746,64 +757,47 @@ if data:
                 legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
             )
             st.plotly_chart(fig_twin2, use_container_width=True)
+
             # =========================================================================
-            # ĐỒ THỊ 3 (BỔ SUNG MỚI): Trục tung kép cho Chỉ số Rủi ro Chính trị (GPR)
+            # ĐỒ THỊ 3: GPR vs GPRHC_VNM
             # =========================================================================
             st.write("---")
             st.subheader("3. Rủi ro Địa chính trị Toàn cầu (GPR) và Rủi ro Địa chính trị Việt Nam (GPRHC_VNM)")
             
+            # Khung thời gian riêng cho Đồ thị 3
+            st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 3)")
+            c1_g3, c2_g3 = st.columns(2)
+            with c1_g3:
+                start_date_g3 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 3)", min_value=min_date_wui, max_value=max_date_wui, value=min_date_wui, key="start_t4_g3"))
+            with c2_g3:
+                end_date_g3 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 3)", min_value=min_date_wui, max_value=max_date_wui, value=max_date_wui, key="end_t4_g3"))
+
+            wui_df3 = data['ls_wui'][(data['ls_wui']['Date'] >= start_date_g3) & (data['ls_wui']['Date'] <= end_date_g3)]
+            available_cols_g3 = get_numeric_cols(wui_df3)
+            
             cz1, cz2 = st.columns(2)
             with cz1:
-                # TỰ ĐỘNG DÒ: Tìm cột trong file có chứa từ khóa 'GPR:'
-                matched_gpr_l = [c for c in available_cols_wui if 'gpr:' in c.lower()]
-                # Nếu tìm thấy thì lấy cột đó, nếu không thì lấy cột đầu tiên của file làm dự phòng
-                def_z1 = matched_gpr_l[0] if matched_gpr_l else available_cols_wui[0]
-                
-                sel_z1 = st.selectbox("Chọn chỉ tiêu Rủi ro Địa chính trị (Trục trái):", available_cols_wui, index=available_cols_wui.index(def_z1), key="t4_g3_l")
+                matched_gpr_l = [c for c in available_cols_g3 if 'gpr:' in c.lower()]
+                def_z1 = matched_gpr_l[0] if matched_gpr_l else available_cols_g3[0]
+                sel_z1 = st.selectbox("Chọn chỉ tiêu Rủi ro Địa chính trị (Trục trái):", available_cols_g3, index=available_cols_g3.index(def_z1), key="t4_g3_l")
             with cz2:
-                # TỰ ĐỘNG DÒ: Tìm cột trong file có chứa từ khóa 'gprhc_vnm:'
-                matched_gpr_r = [c for c in available_cols_wui if 'gprhc_vnm:' in c.lower()]
-                # Nếu tìm thấy thì lấy cột đó, nếu không thì lấy cột thứ 2 của file làm dự phòng
-                def_z2 = matched_gpr_r[0] if matched_gpr_r else available_cols_wui[min(1, len(available_cols_wui)-1)]
-                
-                sel_z2 = st.selectbox("Chọn chỉ tiêu Quốc gia cụ thể (Trục phải):", available_cols_wui, index=available_cols_wui.index(def_z2), key="t4_g3_r")
+                matched_gpr_r = [c for c in available_cols_g3 if 'gprhc_vnm:' in c.lower()]
+                def_z2 = matched_gpr_r[0] if matched_gpr_r else available_cols_g3[min(1, len(available_cols_g3)-1)]
+                sel_z2 = st.selectbox("Chọn chỉ tiêu Quốc gia cụ thể (Trục phải):", available_cols_g3, index=available_cols_g3.index(def_z2), key="t4_g3_r")
             
-            # --- BƯỚC 1: XỬ LÝ CHUỖI NHÃN SẠCH CHỮ TRƯỚC KHI TRUYỀN VÀO ĐỒ THỊ ---
             clean_label_z1 = sel_z1.split(':')[0].strip()
             clean_label_z2 = sel_z2.split(':')[0].strip()
             
-            # --- BƯỚC 2: KHỞI TẠO ĐỐI TƯỢNG FIG_TWIN3 ---
             fig_twin3 = go.Figure()
+            fig_twin3.add_trace(go.Scatter(x=wui_df3['Date'], y=wui_df3[sel_z1], name=f"{clean_label_z1} (Trục trái)", mode='lines+markers', line=dict(color='#2ca02c')))
+            fig_twin3.add_trace(go.Scatter(x=wui_df3['Date'], y=wui_df3[sel_z2], name=f"{clean_label_z2} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='#ff7f0e')))
             
-            # --- BƯỚC 3: THÊM CÁC ĐƯỜNG BIỂU DIỄN DATA ---
-            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z1], name=f"{clean_label_z1} (Trục trái)", mode='lines+markers', line=dict(color='#2ca02c')))
-            fig_twin3.add_trace(go.Scatter(x=wui_df['Date'], y=wui_df[sel_z2], name=f"{clean_label_z2} (Trục phải)", mode='lines+markers', yaxis='y2', line=dict(color='#ff7f0e')))
-            
-            # --- BƯỚC 4: CẬP NHẬT GIAO DIỆN CHUẨN PLOTLY ---
             fig_twin3.update_layout(
                 template="plotly_white",
-                # Cấu trúc yaxis 1 (Trục trái)
-                yaxis=dict(
-                    title=dict(
-                        text=clean_label_z1,
-                        font=dict(color='#2ca02c')
-                    ),
-                    tickfont=dict(color='#2ca02c')
-                ),
-                # Cấu trúc yaxis 2 (Trục phải)
-                yaxis2=dict(
-                    title=dict(
-                        text=clean_label_z2,
-                        font=dict(color='#ff7f0e')
-                    ),
-                    tickfont=dict(color='#ff7f0e'),
-                    overlaying='y', 
-                    side='right'
-                ),
+                yaxis=dict(title=dict(text=clean_label_z1, font=dict(color='#2ca02c')), tickfont=dict(color='#2ca02c')),
+                yaxis2=dict(title=dict(text=clean_label_z2, font=dict(color='#ff7f0e')), tickfont=dict(color='#ff7f0e'), overlaying='y', side='right'),
                 legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
             )
-            
-            # --- BƯỚC 5: HIỂN THỊ LÊN GIAO DIỆN STREAMLIT ---
             st.plotly_chart(fig_twin3, use_container_width=True)
     # ----------------------------------------------------------------------
     # MODE 5: TỶ GIÁ TRUNG TÂM & KỲ VỌNG LẠM PHÁT (TƯƠNG ỨNG TAB 5 CŨ)
