@@ -132,7 +132,26 @@ if data:
     # MODE 1: LÃI SUẤT THỊ TRƯỜNG 2 (TƯƠNG ỨNG TAB 1 CŨ)
     # ----------------------------------------------------------------------
     if menu_selection == "🏦 Lãi suất thị trường 2":
-        if 'vnibor_q' in data and 'bond_y_q' in data:
+        if 'vnibor_q' in data and 'bond_y_q' in data and 'vnibor' in data:
+            # =====================================================================
+            # TÙY CHỌN TẦN SUẤT DỮ LIỆU VNIBOR
+            # =====================================================================
+            st.markdown("##### ⏱️ Cấu hình tần suất dữ liệu VNIBOR")
+            freq_selection = st.radio(
+                "Chọn tần suất hiển thị cho Lãi suất liên ngân hàng (VNIBOR):",
+                ["Theo quý (Dữ liệu Quý)", "Theo tháng (Dữ liệu Tháng)"],
+                horizontal=True,
+                key="vnibor_freq_selector"
+            )
+            
+            # Gán dataframe linh hoạt dựa trên lựa chọn tần suất của người dùng
+            if freq_selection == "Theo tháng (Dữ liệu Tháng)":
+                vnibor_active_source = data['vnibor']
+            else:
+                vnibor_active_source = data['vnibor_q']
+
+            st.write("---")
+
             # =====================================================================
             # ĐỒ THỊ 1: Tạo bộ lọc thời gian riêng cho Tab 1 / Đồ thị 1
             # =====================================================================
@@ -143,86 +162,101 @@ if data:
             with c2:
                 end_date_t1 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 1)", pd.to_datetime("2026-06-30"), key="end_t1"))
 
-            # Lọc khung thời gian trước khi hiển thị tùy chọn chỉ tiêu cho đồ thị 1
-            v_q = data['vnibor_q'][(data['vnibor_q']['Date'] >= start_date_t1) & (data['vnibor_q']['Date'] <= end_date_t1)]
-            b_q = data['bond_y_q'][(data['bond_y_q']['Date'] >= start_date_t1) & (data['bond_y_q']['Date'] <= end_date_t1)]
+            # Lọc khung thời gian từ nguồn dữ liệu được chọn
+            v_q = vnibor_active_source[(vnibor_active_source['Date'] >= start_date_t1) & (vnibor_active_source['Date'] <= end_date_t1)]
             
-            # Tên chỉ tiêu mặc định cũ nếu tồn tại trong file
-            col_qd_def = "Lãi suất bình quân liên ngân hàng qua đêm\nĐơn vị: %"
-            col_1w_def = "Lãi suất bình quân liên ngân hàng 1 tuần\nĐơn vị: %"
-            col_bond_def = "Lợi suất trái phiếu chính phủ 1 năm\nĐơn vị: %"
-            
-            # Đồ thị 1: Chọn chỉ tiêu vẽ VNIBOR theo quý
-            st.subheader("1. Diễn biến Lãi suất liên ngân hàng theo quý")
+            # Đồ thị 1: Lấy TOÀN BỘ các cột số có sẵn trong bảng VNIBOR hiện tại
+            st.subheader(f"1. Diễn biến Lãi suất liên ngân hàng ({freq_selection.split(' ')[0].lower()})")
             available_cols_v1 = get_numeric_cols(v_q)
             
-            # Gợi ý mặc định nếu có trong list cột, không thì lấy các phần tử đầu tiên
-            default_v1 = [c for c in [col_qd_def, col_1w_def] if c in available_cols_v1]
-            if not default_v1 and available_cols_v1: default_v1 = available_cols_v1[:min(2, len(available_cols_v1))]
+            # Thuật toán tìm kiếm thông minh cột mặc định dựa trên từ khóa (bất kể xuống dòng hay khoảng trắng)
+            default_v1 = [c for c in available_cols_v1 if any(k in c for k in ['qua đêm', '1 tuần'])]
+            if not default_v1 and available_cols_v1: 
+                default_v1 = available_cols_v1[:min(2, len(available_cols_v1))]
             
-            selected_v1 = st.multiselect("Chọn các chỉ tiêu VNIBOR muốn hiển thị:", available_cols_v1, default=default_v1, key="sel_t1_g1")
+            # Hiển thị bộ chọn chứa đầy đủ toàn bộ các cột có sẵn
+            selected_v1 = st.multiselect(
+                "Chọn các chỉ tiêu VNIBOR muốn hiển thị:", 
+                available_cols_v1, 
+                default=default_v1, 
+                key="sel_t1_g1"
+            )
             
             if selected_v1:
                 fig1 = go.Figure()
                 for col in selected_v1:
-                    # Tự động scale *100 nếu giá trị nhỏ (dạng thập phân) giống logic cũ
                     y_val = v_q[col]*100 if v_q[col].max() <= 1 else v_q[col]
-                    fig1.add_trace(go.Scatter(x=v_q['Date'], y=y_val, mode='lines+markers', name=col.split('\n')[0]))
+                    display_name = col.split('\n')[0]  # Thu gọn nhãn nếu có xuống dòng
+                    fig1.add_trace(go.Scatter(x=v_q['Date'], y=y_val, mode='lines+markers', name=display_name))
+                
                 fig1.update_layout(
-                    title="Lãi suất liên ngân hàng theo quý", 
+                    title=f"Lãi suất liên ngân hàng ({freq_selection.split(' ')[0].lower()})", 
                     xaxis_title="Ngày", 
                     yaxis_title="Tỷ lệ (%)", 
                     template="plotly_white", 
                     hovermode="x unified",
-                    legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
+                    height=500,
+                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
+                    xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig1, use_container_width=True)
             
-            st.write("---") # Đường kẻ phân cách trực quan giữa 2 đồ thị
+            st.write("---") # Đường kẻ phân cách giữa 2 đồ thị
 
             # =====================================================================
-            # ĐỒ THỊ 2: Bổ sung bộ lọc thời gian riêng (Phân hệ 2)
+            # ĐỒ THỊ 2: Bộ lọc thời gian riêng (Phân hệ 2)
             # =====================================================================
             st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ 2)")
             c3, c4 = st.columns(2)
             with c3:
-                # Đổi key sang "start_t2" và giữ nguyên logic ngày mặc định
                 start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Phân hệ 2)", pd.to_datetime("2022-01-01"), key="start_t2"))
             with c4:
-                # Đổi key sang "end_t2"
                 end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 2)", pd.to_datetime("2026-06-30"), key="end_t2"))
 
-            # Lọc khung thời gian riêng cho Đồ thị 2 từ file data gốc gốc
-            v_q_g2 = data['vnibor_q'][(data['vnibor_q']['Date'] >= start_date_t2) & (data['vnibor_q']['Date'] <= end_date_t2)]
+            # Lọc khung thời gian riêng cho Đồ thị 2
+            v_q_g2 = vnibor_active_source[(vnibor_active_source['Date'] >= start_date_t2) & (vnibor_active_source['Date'] <= end_date_t2)]
             b_q_g2 = data['bond_y_q'][(data['bond_y_q']['Date'] >= start_date_t2) & (data['bond_y_q']['Date'] <= end_date_t2)]
 
-            st.subheader("2. Lãi suất liên ngân hàng và Lợi suất TPCP (theo quý)")
+            st.subheader(f"2. Tương quan VNIBOR ({freq_selection.split(' ')[0].lower()}) và Lợi suất TPCP")
+            
+            # Quét sạch toàn bộ các cột số thực tế có sẵn từ 2 dataframe
             available_cols_v2 = get_numeric_cols(v_q_g2)
             available_cols_b2 = get_numeric_cols(b_q_g2)
             
             cc1, cc2 = st.columns(2)
             with cc1:
-                default_v2 = col_qd_def if col_qd_def in available_cols_v2 else (available_cols_v2[0] if available_cols_v2 else None)
-                selected_v2 = st.selectbox("Chọn chỉ tiêu liên ngân hàng (Trục VNIBOR):", available_cols_v2, index=available_cols_v2.index(default_v2) if default_v2 in available_cols_v2 else 0, key="sel_t1_g2_v")
+                # Tìm cột qua đêm tự động, nếu không thấy lấy cột đầu tiên trong danh sách có sẵn
+                default_v2_col = next((c for c in available_cols_v2 if 'qua đêm' in c), available_cols_v2[0] if available_cols_v2 else None)
+                idx_v2 = available_cols_v2.index(default_v2_col) if default_v2_col in available_cols_v2 else 0
+                
+                selected_v2 = st.selectbox("Chọn chỉ tiêu liên ngân hàng (Trục VNIBOR):", available_cols_v2, index=idx_v2, key="sel_t1_g2_v")
             with cc2:
-                default_b2 = col_bond_def if col_bond_def in available_cols_b2 else (available_cols_b2[0] if available_cols_b2 else None)
-                selected_b2 = st.selectbox("Chọn chỉ tiêu Trái phiếu Chính phủ:", available_cols_b2, index=available_cols_b2.index(default_b2) if default_b2 in available_cols_b2 else 0, key="sel_t1_g2_b")
+                # Tìm cột 1 năm tự động, nếu không thấy lấy cột đầu tiên trong danh sách có sẵn
+                default_b2_col = next((c for c in available_cols_b2 if '1 năm' in c), available_cols_b2[0] if available_cols_b2 else None)
+                idx_b2 = available_cols_b2.index(default_b2_col) if default_b2_col in available_cols_b2 else 0
+                
+                selected_b2 = st.selectbox("Chọn chỉ tiêu Trái phiếu Chính phủ:", available_cols_b2, index=idx_b2, key="sel_t1_g2_b")
             
             if selected_v2 and selected_b2:
                 fig2 = go.Figure()
-                # Sử dụng dữ liệu đã lọc riêng (v_q_g2 và b_q_g2)
                 y_v2 = v_q_g2[selected_v2]*100 if v_q_g2[selected_v2].max() <= 1 else v_q_g2[selected_v2]
                 y_b2 = b_q_g2[selected_b2]*100 if b_q_g2[selected_b2].max() <= 1 else b_q_g2[selected_b2]
                 
-                fig2.add_trace(go.Scatter(x=v_q_g2['Date'], y=y_v2, mode='lines', name=selected_v2.split('\n')[0]))
-                fig2.add_trace(go.Scatter(x=b_q_g2['Date'], y=y_b2, mode='lines', name=selected_b2.split('\n')[0], line=dict(dash='dash')))
+                display_v2 = selected_v2.split('\n')[0]
+                display_b2 = selected_b2.split('\n')[0]
+                
+                fig2.add_trace(go.Scatter(x=v_q_g2['Date'], y=y_v2, mode='lines+markers', name=display_v2))
+                fig2.add_trace(go.Scatter(x=b_q_g2['Date'], y=y_b2, mode='lines+markers', name=display_b2, line=dict(dash='dash')))
+                
                 fig2.update_layout(
-                    title="Mối tương quan giữa VNIBOR và Lợi suất TPCP", 
+                    title=f"Mối tương quan giữa VNIBOR ({freq_selection.split(' ')[0].lower()}) và Lợi suất TPCP", 
                     xaxis_title="Ngày", 
                     yaxis_title="Tỷ lệ (%)", 
                     template="plotly_white", 
                     hovermode="x unified",
-                    legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
+                    height=500,
+                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
+                    xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig2, use_container_width=True)
     # ----------------------------------------------------------------------
