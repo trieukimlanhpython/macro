@@ -55,7 +55,7 @@ def load_and_process_data(file_or_url):
         # Ánh xạ tên các sheet tương ứng với cấu hình của bạn
         sheets_mapping = {
             'vnibor_q': 'vnibor_q', 'vnibor': 'vnibor', 'bond_y_q': 'bond_y_q','bond_y_m': 'bond_y_m',
-            'ex_d': 'ex_d', 'ls2': 'ls2', 'credit': 'credit', 'm2': 'm2',
+            'ex_d': 'ex_d', 'ls1': 'ls1','ls2': 'ls2', 'credit': 'credit', 'm2': 'm2',
             'ls_wui': 'ls_wui', 'omo': 'omo', 'macro': 'macro', 'inf': 'inf'
         }
         
@@ -275,140 +275,133 @@ if data:
                     xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig2, use_container_width=True)
+   
     # ----------------------------------------------------------------------
     # MODE 2: LÃI SUẤT THỊ TRƯỜNG 1 (TƯƠNG ỨNG TAB 2 CŨ)
     # ----------------------------------------------------------------------
     elif menu_selection == "📈 Lãi suất thị trường 1":
-        if 'ls2' in data:
-            # Tạo bộ lọc thời gian riêng cho Tab 2
-            st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ 2)")
+        if 'ls1' in data and 'ls2' in data:
+            
+            # =====================================================================
+            # CHUNG: Khung thời gian phân tích cho toàn bộ phân hệ
+            # =====================================================================
+            st.markdown("##### 📅 Khung thời gian phân tích (Phân hệ Lãi suất Thị trường 1)")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Phân hệ 2)", pd.to_datetime("2022-01-01"), key="start_t2"))
+                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Phân hệ 1)", pd.to_datetime("2022-01-01"), key="start_t2"))
             with c2:
-                end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 2)", pd.to_datetime("2026-06-30"), key="end_t2"))
+                end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Phân hệ 1)", pd.to_datetime("2026-06-30"), key="end_t2"))
 
-            ls_df = data['ls2'][(data['ls2']['Date'] >= start_date_t2) & (data['ls2']['Date'] <= end_date_t2)]
-            available_cols_ls = get_numeric_cols(ls_df)
+            # Lọc dữ liệu theo thời gian
+            ls1_df = data['ls1'][(data['ls1']['Date'] >= start_date_t2) & (data['ls1']['Date'] <= end_date_t2)]
+            ls2_df = data['ls2'][(data['ls2']['Date'] >= start_date_t2) & (data['ls2']['Date'] <= end_date_t2)]
+
+            # =====================================================================
+            # ĐỒ THỊ 1: CHI TIẾT LÃI SUẤT HUY ĐỘNG & CHO VAY (DỮ LIỆU LS1)
+            # =====================================================================
+            st.write("---")
+            st.subheader("1. Diễn biến Lãi suất Huy động và Cho vay chi tiết (Tháng)")
             
-            col_hd_thap_def = "   Lãi suất huy động bình quân trên 12 tháng (thấp nhất)"
-            col_hd_cao_def = "   Lãi suất huy động bình quân trên 12 tháng (cao nhất)"
-            col_cv_thap_def = "   Cho vay VND trung và dài hạn (thấp nhất)"
-            col_cv_cao_def = "   Cho vay VND trung và dài hạn (cao nhất)"
-            
-            # Biểu đồ đường chuỗi thời gian
-            st.subheader("1. Diễn biến Lãi suất huy động bình quân trên 12 tháng")
-            default_t2_g1 = [c for c in [col_hd_thap_def, col_hd_cao_def] if c in available_cols_ls]
-            if not default_t2_g1 and available_cols_ls: default_t2_g1 = available_cols_ls[:min(2, len(available_cols_ls))]
-            
-            selected_t2_g1 = st.multiselect("Chọn các chỉ tiêu lãi suất muốn theo dõi trên đồ thị đường:", available_cols_ls, default=default_t2_g1, key="sel_t2_g1")
-            
+            # Quét và phân loại cột cho bảng ls1
+            all_cols_ls1 = get_numeric_cols(ls1_df)
+            hd_cols_ls1 = [c for c in all_cols_ls1 if 'LSHĐ' in c]
+            cv_cols_ls1 = [c for c in all_cols_ls1 if any(k in c for k in ['LSCV', 'LSCH', 'Cho vay'])]
+
+            # Giao diện bộ chọn song song
+            cc1, cc2 = st.columns(2)
+            with cc1:
+                default_hd1 = [c for c in hd_cols_ls1 if 'Kỳ hạn > 12 tháng' in c][:2]
+                if not default_hd1 and hd_cols_ls1: default_hd1 = hd_cols_ls1[:2]
+                selected_hd1 = st.multiselect("🏦 Chọn Lãi suất Huy động (ls1):", hd_cols_ls1, default=default_hd1, key="sel_hd_ls1")
+            with cc2:
+                default_cv1 = [c for c in cv_cols_ls1 if 'SXKD thông thường (Nhóm NHTM NN)' in c][:2]
+                if not default_cv1 and cv_cols_ls1: default_cv1 = cv_cols_ls1[:2]
+                selected_cv1 = st.multiselect("💸 Chọn Lãi suất Cho vay (ls1):", cv_cols_ls1, default=default_cv1, key="sel_cv_ls1")
+
+            selected_t2_g1 = selected_hd1 + selected_cv1
+
             if selected_t2_g1:
                 fig3 = go.Figure()
                 for idx, col in enumerate(selected_t2_g1):
-                    y_val = ls_df[col]*100 if ls_df[col].max() <= 1 else ls_df[col]
+                    y_val = ls1_df[col]*100 if ls1_df[col].max() <= 1 else ls1_df[col]
                     marker_symbol = 'square' if idx % 2 == 0 else 'circle'
-                    fig3.add_trace(go.Scatter(x=ls_df['Date'], y=y_val, mode='lines+markers', name=col.strip(), marker=dict(symbol=marker_symbol)))
+                    display_name = col.strip().split('\n')[0]
+                    fig3.add_trace(go.Scatter(x=ls1_df['Date'], y=y_val, mode='lines+markers', name=display_name, marker=dict(symbol=marker_symbol)))
+                
                 fig3.update_layout(
+                    title="Biến động các chỉ tiêu lãi suất chi tiết",
+                    xaxis_title="Ngày",
                     yaxis_title="Lãi suất (%)", 
                     template="plotly_white", 
                     hovermode="x unified",
-                    legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
+                    height=520,
+                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
+                    xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig3, use_container_width=True)
-        
-            # Biểu đồ Cột Grouped Bar Chart cho Kỳ gần đây
-            st.subheader("2. So sánh biên độ Lãi suất huy động và Cho vay theo Kỳ")
-            
-            # --- ĐỒ THỊ 1: LÃI SUẤT HUY ĐỘNG ---
-            st.markdown("#### 🏦 Lãi suất Huy động trên 12 tháng")
-            
-            c_hd1, c_hd2 = st.columns(2)
-            with c_hd1:
-                start_hd = pd.to_datetime(st.date_input("Từ ngày (Lãi suất Huy động)", pd.to_datetime("2026-01-01"), key="start_t2_hd"))
-            with c_hd2:
-                end_hd = pd.to_datetime(st.date_input("Đến ngày (Lãi suất Huy động)", pd.to_datetime("2026-06-30"), key="end_t2_hd"))
-            
-            ls_hd_df = data['ls2'][(data['ls2']['Date'] >= start_hd) & (data['ls2']['Date'] <= end_hd)].copy()
-            available_cols_ls_hd = get_numeric_cols(ls_hd_df)
-            
-            default_bar1 = [c for c in [col_hd_thap_def, col_hd_cao_def] if c in available_cols_ls_hd]
-            if not default_bar1 and available_cols_ls_hd: 
-                default_bar1 = available_cols_ls_hd[:min(2, len(available_cols_ls_hd))]
-            
-            selected_bar1 = st.multiselect("Chọn chỉ tiêu cột nhóm 1:", available_cols_ls_hd, default=default_bar1, key="sel_t2_b1")
-            
-            if selected_bar1:
-                is_decimal_hd = ls_hd_df[selected_bar1[0]].max() <= 1
-                
-                fig_bar1 = px.bar(
-                    ls_hd_df, 
-                    x='Kỳ' if 'Kỳ' in ls_hd_df.columns else 'Date', 
-                    y=selected_bar1, 
-                    barmode='group', 
-                    labels={'value': 'Tỷ lệ'}, 
-                    color_discrete_sequence=['#3b71ca', '#f17a28']
-                )
-                
-                if is_decimal_hd:
-                    fig_bar1.update_traces(texttemplate='%{y:.2%}', textposition='outside')
-                    y_max_factor = 0.08
-                else:
-                    fig_bar1.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
-                    y_max_factor = 8.0
-                    
-                fig_bar1.update_layout(
-                    yaxis=dict(tickformat='.1%' if is_decimal_hd else None, range=[y_max_factor * 0.5, y_max_factor]), 
-                    template="plotly_white",
-                    legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
-                )
-                st.plotly_chart(fig_bar1, use_container_width=True)
-            
-            st.markdown("---") # Đường kẻ phân cách giữa 2 đồ thị
 
-            # --- ĐỒ THỊ 2: LÃI SUẤT CHO VAY ---
-            st.markdown("#### 💸 Lãi suất Cho vay Trung và Dài hạn")
+            # =====================================================================
+            # ĐỒ THỊ 2: LÃI SUẤT HUY ĐỘNG & CHO VAY TỔNG HỢP (DỮ LIỆU LS2)
+            # =====================================================================
+            st.write("---")
+            st.subheader("2. Diễn biến Lãi suất Huy động và Cho vay tổng hợp (Cột nhóm)")
             
-            c_cv1, c_cv2 = st.columns(2)
-            with c_cv1:
-                start_cv = pd.to_datetime(st.date_input("Từ ngày (Lãi suất Cho vay)", pd.to_datetime("2026-01-01"), key="start_t2_cv"))
-            with c_cv2:
-                end_cv = pd.to_datetime(st.date_input("Đến ngày (Lãi suất Cho vay)", pd.to_datetime("2026-06-30"), key="end_t2_cv"))
-            
-            ls_cv_df = data['ls2'][(data['ls2']['Date'] >= start_cv) & (data['ls2']['Date'] <= end_cv)].copy()
-            available_cols_ls_cv = get_numeric_cols(ls_cv_df)
-            
-            default_bar2 = [c for c in [col_cv_thap_def, col_cv_cao_def] if c in available_cols_ls_cv]
-            if not default_bar2 and len(available_cols_ls_cv) > 2: 
-                default_bar2 = available_cols_ls_cv[2:min(4, len(available_cols_ls_cv))]
-            
-            selected_bar2 = st.multiselect("Chọn chỉ tiêu cột nhóm 2:", available_cols_ls_cv, default=default_bar2, key="sel_t2_b2")
-            
+            # Quét và phân loại cột cho bảng ls2
+            all_cols_ls2 = get_numeric_cols(ls2_df)
+            hd_cols_ls2 = [c for c in all_cols_ls2 if 'huy động' in c.lower()]
+            cv_cols_ls2 = [c for c in all_cols_ls2 if 'cho vay' in c.lower()]
+
+            # Giao diện bộ chọn song song
+            cc3, cc4 = st.columns(2)
+            with cc3:
+                default_hd2 = [c for c in hd_cols_ls2 if 'trên 12 tháng' in c.lower()]
+                if not default_hd2 and hd_cols_ls2: default_hd2 = hd_cols_ls2[:2]
+                selected_hd2 = st.multiselect("🏦 Chọn Lãi suất Huy động tổng hợp (ls2):", hd_cols_ls2, default=default_hd2, key="sel_hd_ls2")
+            with cc4:
+                default_cv2 = [c for c in cv_cols_ls2 if 'trung và dài hạn' in c.lower()]
+                if not default_cv2 and cv_cols_ls2: default_cv2 = cv_cols_ls2[:2]
+                selected_cv2 = st.multiselect("💸 Chọn Lãi suất Cho vay tổng hợp (ls2):", cv_cols_ls2, default=default_cv2, key="sel_cv_ls2")
+
+            selected_bar2 = selected_hd2 + selected_cv2
+
             if selected_bar2:
-                is_decimal_cv = ls_cv_df[selected_bar2[0]].max() <= 1
+                # Kiểm tra định dạng phần trăm thập phân thô
+                is_decimal = ls2_df[selected_bar2[0]].max() <= 1
                 
+                # Nhân 100 nếu dữ liệu là dạng thập phân để hiển thị text rực rỡ bên ngoài cột
+                plot_df = ls2_df.copy()
+                if is_decimal:
+                    for col in selected_bar2:
+                        plot_df[col] = plot_df[col] * 100
+
                 fig_bar2 = px.bar(
-                    ls_cv_df, 
-                    x='Kỳ' if 'Kỳ' in ls_cv_df.columns else 'Date', 
+                    plot_df, 
+                    x='Kỳ' if 'Kỳ' in plot_df.columns else 'Date', 
                     y=selected_bar2, 
                     barmode='group', 
-                    labels={'value': 'Tỷ lệ'}, 
-                    color_discrete_sequence=['#708090', '#008080']
+                    labels={'value': 'Lãi suất (%)', 'variable': 'Chỉ tiêu'},
+                    color_discrete_sequence=['#3b71ca', '#f17a28', '#708090', '#008080']
                 )
                 
-                if is_decimal_cv:
-                    fig_bar2.update_traces(texttemplate='%{y:.2%}', textposition='outside')
-                    y_max_factor2 = 0.12
-                else:
-                    fig_bar2.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
-                    y_max_factor2 = 12.0
-                    
+                # Định dạng nhãn hiển thị đầu cột
+                fig_bar2.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
+                
+                # Tính toán biên trục Y linh hoạt dựa trên giá trị tối đa thực tế của các cột được chọn
+                max_val = max([plot_df[c].max() for c in selected_bar2])
+                min_val = min([plot_df[c].min() for c in selected_bar2])
+                
                 fig_bar2.update_layout(
-                    yaxis=dict(tickformat='.1%' if is_decimal_cv else None, range=[y_max_factor2 * 0.33, y_max_factor2]), 
+                    title="So sánh biên độ lãi suất theo các kỳ gần đây",
+                    yaxis_title="Lãi suất (%)",
+                    yaxis=dict(range=[max(0, min_val - 1.5), max_val + 1.5]), 
                     template="plotly_white",
-                    legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5)
+                    height=520,
+                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
+                    xaxis=dict(title="Kỳ báo cáo", tickangle=45)
                 )
                 st.plotly_chart(fig_bar2, use_container_width=True)
+        else:
+            st.error("Không tìm thấy đủ dữ liệu của hai sheet 'ls1' và 'ls2' trong hệ thống!")
 
     # ----------------------------------------------------------------------
     # MODE 3: TÍN DỤNG & PHƯƠNG TIỆN THANH TOÁN (TƯƠNG ỨNG TAB 3 CŨ)
