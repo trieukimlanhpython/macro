@@ -172,7 +172,7 @@ if data:
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
             c1, c2 = st.columns(2)
             with c1:
-                start_date_t1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2022-01-01"), key="start_t1"))
+                start_date_t1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2026-01-01"), key="start_t1"))
             with c2:
                 end_date_t1 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 1)", pd.to_datetime("2026-06-30"), key="end_t1"))
 
@@ -232,7 +232,7 @@ if data:
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
             c3, c4 = st.columns(2)
             with c3:
-                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2022-01-01"), key="start_t2"))
+                start_date_t2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2026-01-01"), key="start_t2"))
             with c4:
                 end_date_t2 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 2)", pd.to_datetime("2026-06-30"), key="end_t2"))
 
@@ -291,7 +291,7 @@ if data:
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 1)")
             c1_t1, c2_t1 = st.columns(2)
             with c1_t1:
-                start_date_ls1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2022-01-01"), key="start_ls1"))
+                start_date_ls1 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 1)", pd.to_datetime("2026-01-01"), key="start_ls1"))
             with c2_t1:
                 end_date_ls1 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 1)", pd.to_datetime("2026-06-30"), key="end_ls1"))
 
@@ -346,7 +346,7 @@ if data:
             st.markdown("##### 📅 Khung thời gian phân tích (Đồ thị 2)")
             c1_t2, c2_t2 = st.columns(2)
             with c1_t2:
-                start_date_ls2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2022-01-01"), key="start_ls2"))
+                start_date_ls2 = pd.to_datetime(st.date_input("Từ ngày (Đồ thị 2)", pd.to_datetime("2026-01-01"), key="start_ls2"))
             with c2_t2:
                 end_date_ls2 = pd.to_datetime(st.date_input("Đến ngày (Đồ thị 2)", pd.to_datetime("2026-06-30"), key="end_ls2"))
 
