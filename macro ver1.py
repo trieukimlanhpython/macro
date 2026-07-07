@@ -119,7 +119,7 @@ if data:
     * **🏦 Lãi suất thị trường 2:** Lãi suất liên ngân hàng, lãi suất trái phiếu chính phủ (so sánh).
     * **📈 Lãi suất thị trường 1:** Lãi suất huy động, lãi suất cho vay, ngắn hạn, trung dài hạn, cao nhất, thấp nhất, VND, USD.
     * **📊 Tín dụng, Cung tiền & OMO:** Diễn biến dư nợ tín dụng, cơ cấu dư nợ, tổng phương tiện thanh toán, cơ cấu tổng phương tiện thanh toán, bơm hút ròng tiền trên thị trường mở.
-    * **🌍 Chỉ số Bất ổn, GPR & FFR:** Chỉ số Bất ổn Toàn cầu (WUI), Chỉ số Bất ổn Chính sách Tiền tệ Mỹ (MPUI), Chỉ số rủi ro địa chính trị (GPR) và Lãi suất Quỹ liên bang Fed (FFR).
+    * **🌍 Chỉ số Bất ổn & FFR:** Chỉ số Bất ổn Toàn cầu (WUI), Chỉ số Bất ổn Chính sách Tiền tệ Mỹ (MPUI), Chỉ số rủi ro địa chính trị (GPR) và Lãi suất Quỹ liên bang Fed (FFR).
     * **⚖️ Tỷ giá & Lạm phát:** Tỷ giá trung tâm VND/USD (ngày), Kỳ vọng lạm phát điều tra của các TCTD (BQ năm nay so với năm trước) và Thay đổi CPI (so với cùng kỳ) (%).
     * **📊 Kinh tế vĩ mô (Macro):** Xem các chỉ tiêu vĩ mô đồng thời.
     """
