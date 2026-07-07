@@ -275,6 +275,7 @@ if data:
                     xaxis=dict(tickangle=45)
                 )
                 st.plotly_chart(fig2, use_container_width=True)
+   
     # ----------------------------------------------------------------------
     # MODE 2: LÃI SUẤT THỊ TRƯỜNG 1 (TƯƠNG ỨNG TAB 2 CŨ)
     # ----------------------------------------------------------------------
@@ -393,69 +394,6 @@ if data:
                 fig_bar2.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
                 
                 # Tính toán biên trục Y linh hoạt
-                max_val = max([plot_df[c].max() for c in selected_bar2])
-                min_val = min([plot_df[c].min() for c in selected_bar2])
-                
-                fig_bar2.update_layout(
-                    title="So sánh biên độ lãi suất theo các kỳ gần đây",
-                    yaxis_title="Lãi suất (%)",
-                    yaxis=dict(range=[max(0, min_val - 1.5), max_val + 1.5]), 
-                    template="plotly_white",
-                    height=520,
-                    legend=dict(orientation="h", yanchor="top", y=-0.38, xanchor="center", x=0.5),
-                    xaxis=dict(title="Kỳ báo cáo", tickangle=45)
-                )
-                st.plotly_chart(fig_bar2, use_container_width=True)
-        else:
-            st.error("Không tìm thấy đủ dữ liệu của hai sheet 'ls1' và 'ls2' trong hệ thống!")
-
-            # =====================================================================
-            # ĐỒ THỊ 2: LÃI SUẤT HUY ĐỘNG & CHO VAY TỔNG HỢP (DỮ LIỆU LS2)
-            # =====================================================================
-            st.write("---")
-            st.subheader("2. Diễn biến Lãi suất Huy động và Cho vay tổng hợp (Cột nhóm)")
-            
-            # Quét và phân loại cột cho bảng ls2
-            all_cols_ls2 = get_numeric_cols(ls2_df)
-            hd_cols_ls2 = [c for c in all_cols_ls2 if 'huy động' in c.lower()]
-            cv_cols_ls2 = [c for c in all_cols_ls2 if 'cho vay' in c.lower()]
-
-            # Giao diện bộ chọn song song
-            cc3, cc4 = st.columns(2)
-            with cc3:
-                default_hd2 = [c for c in hd_cols_ls2 if 'trên 12 tháng' in c.lower()]
-                if not default_hd2 and hd_cols_ls2: default_hd2 = hd_cols_ls2[:2]
-                selected_hd2 = st.multiselect("🏦 Chọn Lãi suất Huy động tổng hợp (ls2):", hd_cols_ls2, default=default_hd2, key="sel_hd_ls2")
-            with cc4:
-                default_cv2 = [c for c in cv_cols_ls2 if 'trung và dài hạn' in c.lower()]
-                if not default_cv2 and cv_cols_ls2: default_cv2 = cv_cols_ls2[:2]
-                selected_cv2 = st.multiselect("💸 Chọn Lãi suất Cho vay tổng hợp (ls2):", cv_cols_ls2, default=default_cv2, key="sel_cv_ls2")
-
-            selected_bar2 = selected_hd2 + selected_cv2
-
-            if selected_bar2:
-                # Kiểm tra định dạng phần trăm thập phân thô
-                is_decimal = ls2_df[selected_bar2[0]].max() <= 1
-                
-                # Nhân 100 nếu dữ liệu là dạng thập phân để hiển thị text rực rỡ bên ngoài cột
-                plot_df = ls2_df.copy()
-                if is_decimal:
-                    for col in selected_bar2:
-                        plot_df[col] = plot_df[col] * 100
-
-                fig_bar2 = px.bar(
-                    plot_df, 
-                    x='Kỳ' if 'Kỳ' in plot_df.columns else 'Date', 
-                    y=selected_bar2, 
-                    barmode='group', 
-                    labels={'value': 'Lãi suất (%)', 'variable': 'Chỉ tiêu'},
-                    color_discrete_sequence=['#3b71ca', '#f17a28', '#708090', '#008080']
-                )
-                
-                # Định dạng nhãn hiển thị đầu cột
-                fig_bar2.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
-                
-                # Tính toán biên trục Y linh hoạt dựa trên giá trị tối đa thực tế của các cột được chọn
                 max_val = max([plot_df[c].max() for c in selected_bar2])
                 min_val = min([plot_df[c].min() for c in selected_bar2])
                 
