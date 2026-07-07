@@ -207,7 +207,7 @@ if data:
                     fig1.add_trace(go.Scatter(x=v_q['Date'], y=y_val, mode='lines+markers', name=display_name))
                 
                 fig1.update_layout(
-                    title=f"Lãi suất liên ngân hàng ({freq_t1.split(' ')[0].lower()})", 
+                    title=f"Lãi suất liên ngân hàng ({freq_t1})", 
                     xaxis_title="Ngày", 
                     yaxis_title="Tỷ lệ (%)", 
                     template="plotly_white", 
@@ -289,7 +289,7 @@ if data:
                 fig2.add_trace(go.Scatter(x=b_q_g2['Date'], y=y_b2, mode='lines+markers', name=display_b2, line=dict(dash='dash')))
                 
                 fig2.update_layout(
-                    title=f"Mối tương quan giữa VNIBOR và Lợi suất TPCP ({freq_t2.split(' ')[0].lower()})", 
+                    title=f"Mối tương quan giữa VNIBOR và Lợi suất TPCP ({freq_t2})", 
                     xaxis_title="Ngày", 
                     yaxis_title="Tỷ lệ (%)", 
                     template="plotly_white", 
